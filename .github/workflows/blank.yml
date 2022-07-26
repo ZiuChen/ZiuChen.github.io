@@ -42,9 +42,8 @@ jobs:
         run: pnpm docs:build
 
       - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@releases/v3
-        env:
-          repo: git@github.com:owner/repo.git
-          branch: gh-pages
+        uses: JamesIves/github-pages-deploy-action@releases/v4
+        with:
           folder: docs/.vuepress/dist
+          branch: gh-pages
           ssh-key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
