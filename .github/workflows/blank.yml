@@ -46,4 +46,4 @@ jobs:
         with:
           folder: docs/.vuepress/dist
           branch: gh-pages
-          ssh-key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
+          # ssh-key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
