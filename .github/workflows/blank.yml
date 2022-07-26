@@ -44,7 +44,7 @@ jobs:
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@releases/v3
         env:
-          REPO: git@github.com:owner/repo.git
-          BRANCH: gh-pages
-          FOLDER: docs/.vuepress/dist
-          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_PRIVATE_KEY }}
+          repo: git@github.com:owner/repo.git
+          branch: gh-pages
+          folder: docs/.vuepress/dist
+          ssh-key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
