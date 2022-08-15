@@ -14,7 +14,7 @@ export default defineConfig({
       { text: '首页', link: '/' },
       {
         text: '开源作品',
-        link: '/project/'
+        link: '/works/'
       },
       {
         text: '个人介绍',
@@ -44,7 +44,7 @@ export default defineConfig({
         ]
       }
     ],
-    sidebar: [['/', '首页'], '/project/', '/self/'],
+    sidebar: [['/', '首页'], '/works/', '/self/'],
     logo: '/logo.png',
     repo: 'ZiuChen',
     docsBranch: 'master',
