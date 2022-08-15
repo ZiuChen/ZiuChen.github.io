@@ -44,7 +44,7 @@ export default defineConfig({
         ]
       }
     ],
-    sidebar: [['/', '首页'], '/works/', '/self/'],
+    displayAllHeaders: true,
     logo: '/logo.png',
     repo: 'ZiuChen',
     docsBranch: 'master',
