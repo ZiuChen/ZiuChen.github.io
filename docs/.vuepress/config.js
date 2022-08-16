@@ -1,13 +1,18 @@
-import { defineConfig } from 'vuepress/config'
-
-export default defineConfig({
+module.exports = {
   title: 'ZiuChen',
   description: 'Unlimited Progress.',
   head: [['link', { rel: 'icon', href: '/logo.png' }]],
   plugins: [
     '@vuepress/medium-zoom',
     '@vuepress/active-header-links',
-    '@vuepress/plugin-back-to-top'
+    '@vuepress/plugin-back-to-top',
+    '@vuepress/last-updated',
+    {
+      transformer: (timestamp) => {
+        const d = new Date(timestamp)
+        return d.toLocaleDateString() + d.toLocaleTimeString()
+      }
+    }
   ],
   themeConfig: {
     nav: [
@@ -52,4 +57,4 @@ export default defineConfig({
     docsDir: 'docs',
     lastUpdated: 'Last Updated'
   }
-})
+}
