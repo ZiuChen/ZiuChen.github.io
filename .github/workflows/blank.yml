@@ -31,17 +31,17 @@ jobs:
       - name: Build VuePress site
         run: pnpm docs:build
 
-  Deploy:
-    name: Deploy
-    needs: Build
-    runs-on: ubuntu-latest
-    steps:
       - name: Deploy Github Pages
         uses: JamesIves/github-pages-deploy-action@releases/v4
         with:
           folder: docs/.vuepress/dist
           branch: gh-pages
 
+  Deploy:
+    name: Deploy
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
       - name: Sync to Gitee
         uses: wearerequired/git-mirror-action@master
         env:
