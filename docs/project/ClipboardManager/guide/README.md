@@ -6,7 +6,7 @@ sidebarDepth: 2
 
 # 使用指南
 
-[插件发布页](https://yuanliao.info/d/5722/29)
+[更新日志](../log/README.md)  [插件发布页](https://yuanliao.info/d/5722/29)
 
 ## 如何迁移数据
 
@@ -44,5 +44,3 @@ sidebarDepth: 2
 ### OneDrive
 
 > 有待测试
-
-## [更新日志](../log/README.md)
