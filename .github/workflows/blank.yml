@@ -8,6 +8,7 @@ on:
 
 jobs:
   Build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -31,6 +32,8 @@ jobs:
         run: pnpm docs:build
 
   Deploy:
+    name: Deploy
+    needs: Build
     runs-on: ubuntu-latest
     steps:
       - name: Deploy Github Pages
