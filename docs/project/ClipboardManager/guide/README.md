@@ -10,12 +10,12 @@ sidebarDepth: 2
 
 ## 如何迁移数据
 
-`v1.1.0` 及之前的版本，剪贴板数据存放在
+`v2.0.0` 及之前的版本，剪贴板数据存放在
 
 - `Windows` `Linux`用户：`{home}\_utools_clipboard_manager_storage`
 - `Mac`用户：`{userData}\_utools_clipboard_manager_storage`
 
-`v1.1.0` 版本之后，剪贴板数据存放在
+`v2.0.0` 版本之后，剪贴板数据存放在
 
 - `{userData}\.utools-clipboard-manager\_utools_clipboard_manager_storage`
 
@@ -24,7 +24,7 @@ sidebarDepth: 2
 ## 如何实现多端同步
 
 ::: warning
-`v1.1.0` 及之后的版本适用
+`v2.0.0` 及之后的版本适用
 :::
 
 ### 坚果云
