@@ -8,6 +8,20 @@ sidebarDepth: 2
 
 [插件发布页](https://yuanliao.info/d/5722/29)
 
+## 如何迁移数据
+
+`v1.0.2`及之前的版本，剪贴板数据存放在
+
+- `Windows` `Linux`用户：`{home}\_utools_clipboard_manager_storage`
+- `Mac`用户：`{userData}\_utools_clipboard_manager_storage`
+
+`v1.1.0`版本之后，剪贴板数据存放在
+
+- `Windows` `Linux`用户：`{home}\.utools-clipboard-manager\_utools_clipboard_manager_storage`
+- `Mac`用户：`{userData}\.utools-clipboard-manager\_utools_clipboard_manager_storage`
+
+要手动迁移数据，只需要在新设备上运行一次插件，而后将原设备上的数据文件拷贝并替换新设备中的数据文件即可
+
 ## 如何实现多端同步
 
 ### 坚果云
@@ -26,3 +40,7 @@ sidebarDepth: 2
 其他安装了坚果云的设备也将自动同步更新
 
 ![](../assets/img1.png)
+
+### OneDrive
+
+> 有待测试
