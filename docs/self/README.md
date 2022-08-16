@@ -1,6 +1,7 @@
 ---
 sidebar: auto
 sidebarDepth: 2
+editLink: false
 ---
 
 # 个人介绍

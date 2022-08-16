@@ -46,8 +46,10 @@ export default defineConfig({
     ],
     displayAllHeaders: true,
     logo: '/logo.png',
-    repo: 'ZiuChen',
-    docsBranch: 'master',
-    docsDir: 'docs'
+    repo: 'ZiuChen/ZiuChen.github.io',
+    editLinks: true,
+    docsBranch: 'main',
+    docsDir: 'docs',
+    lastUpdated: 'Last Updated'
   }
 })
