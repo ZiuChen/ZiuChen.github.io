@@ -47,3 +47,9 @@ jobs:
           folder: docs/.vuepress/dist
           branch: gh-pages
           # ssh-key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
+
+      - name: Gitee Pages Reload
+        uses: mizuka-wu/gitee-pages-action@v1.0.0
+        with:
+          repository: ZiuChen/ZiuChen.github.io
+          cookie: ${{ secrets.GITEE_COOKIE }}
