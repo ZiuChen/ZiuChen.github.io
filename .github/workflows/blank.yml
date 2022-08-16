@@ -41,25 +41,24 @@ jobs:
       - name: Build VuePress site
         run: pnpm docs:build
 
-      - name: Deploy
+      - name: Deploy Github Pages
         uses: JamesIves/github-pages-deploy-action@releases/v4
         with:
           folder: docs/.vuepress/dist
           branch: gh-pages
-          # ssh-key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
 
-      # - name: Sync to Gitee
-      #   uses: wearerequired/git-mirror-action@master
-      #   env:
-      #     # 注意在 Settings->Secrets 配置 GITEE_RSA_PRIVATE_KEY
-      #     SSH_PRIVATE_KEY: ${{ secrets.GITEE_RSA_PRIVATE_KEY }}
-      #   with:
-      #     # 注意替换为你的 GitHub 源仓库地址
-      #     source-repo: git@github.com:doocs/leetcode.git
-      #     # 注意替换为你的 Gitee 目标仓库地址
-      #     destination-repo: git@gitee.com:Doocs/leetcode.git
+      - name: Sync to Gitee
+        uses: wearerequired/git-mirror-action@master
+        env:
+          # 注意在 Settings->Secrets 配置 GITEE_RSA_PRIVATE_KEY
+          SSH_PRIVATE_KEY: ${{ secrets.GITEE_RSA_PRIVATE_KEY }}
+        with:
+          # 注意替换为你的 GitHub 源仓库地址
+          source-repo: git@github.com:ZiuChen/ZiuChen.github.io.git
+          # 注意替换为你的 Gitee 目标仓库地址
+          destination-repo: git@gitee.com:ZiuChen/ZiuChen.git
 
-      - name: Build Gitee Pages
+      - name: Deploy Gitee Pages
         uses: yanglbme/gitee-pages-action@main
         with:
           # 注意替换为你的 Gitee 用户名
