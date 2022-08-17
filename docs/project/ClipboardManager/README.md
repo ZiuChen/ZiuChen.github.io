@@ -41,4 +41,4 @@ navbar: false
 
 [催更群 769115389](https://qm.qq.com/cgi-bin/qm/qr?k=9qfHKTaQuWqYN1ys1yiQPdJ4iIlHwgL5&jump_from=webapi)  [Github](https://github.com/ZiuChen)
 
-![](./assets/donate.png)
+![donate](https://gcore.jsdelivr.net/gh/ZiuChen/ZiuChen/donate.png)
