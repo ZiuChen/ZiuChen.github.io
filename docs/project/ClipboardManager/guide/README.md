@@ -6,8 +6,6 @@ sidebarDepth: 2
 
 # 使用指南
 
-[更新日志](../log/README.md)  [插件发布页](https://yuanliao.info/d/5722/29)
-
 ## 如何迁移数据
 
 `v2.0.0` 及之前的版本，剪贴板数据存放在
