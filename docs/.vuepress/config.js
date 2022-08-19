@@ -9,13 +9,14 @@ module.exports = {
       /* js */ `
       var _hmt = _hmt || [];
       (function() {
+        var isGitee = document.location.href.indexOf("gitee.io") !== -1
         var hm1 = document.createElement("script");
         hm1.src = "https://hm.baidu.com/hm.js?08b4ef50a9244e83e5a1bd5822442829"; // gitee
         var hm2 = document.createElement("script");
         hm2.src = "https://hm.baidu.com/hm.js?50bac15a1f238d1aa61f104a5fb6f5e0"; // github
-        var s = document.getElementsByTagName("script")[0]; 
-        s.parentNode.insertBefore(hm1, s);
-        s.parentNode.insertBefore(hm2, s);
+        var s = document.getElementsByTagName("script")[0];
+        if (isGitee) s.parentNode.insertBefore(hm1, s);
+        else s.parentNode.insertBefore(hm2, s);
       })();
       </script>        
     `
