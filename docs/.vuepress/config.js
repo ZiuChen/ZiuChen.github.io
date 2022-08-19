@@ -46,25 +46,16 @@ module.exports = {
         link: '/self/',
         items: [
           {
-            text: '关于我',
-            link: '/self/'
+            text: '技术栈',
+            link: '/self/#技术栈'
           },
           {
-            text: '更多信息',
-            items: [
-              {
-                text: '技术栈',
-                link: '/self/#技术栈'
-              },
-              {
-                text: '获得奖项',
-                link: '/self/#获得奖项'
-              },
-              {
-                text: '相关链接',
-                link: '/self/#相关链接'
-              }
-            ]
+            text: '获得奖项',
+            link: '/self/#获得奖项'
+          },
+          {
+            text: '相关链接',
+            link: '/self/#相关链接'
           }
         ]
       }
@@ -75,6 +66,7 @@ module.exports = {
     editLinks: true,
     docsBranch: 'main',
     docsDir: 'docs',
-    lastUpdated: 'Last Updated'
+    lastUpdated: 'Last Updated',
+    smoothScroll: true
   }
 }
