@@ -5,7 +5,7 @@ navbar: false
 <div align="center">
   <img src="./assets/logo.png" alt="logo" />
   <br></br>
-  <h1>剪贴板</h1>
+  <h1>超级剪贴板</h1>
   <i>✨ 记录剪贴板历史并保存到本地，支持文字/图片/文件。</i>
 </div>
 
