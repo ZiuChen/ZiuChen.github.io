@@ -67,6 +67,6 @@ module.exports = {
     docsBranch: 'main',
     docsDir: 'docs',
     lastUpdated: 'Last Updated',
-    smoothScroll: true
+    search: false
   }
 }
