@@ -44,6 +44,8 @@ Typein 是一个运行在现代浏览器上的拓展插件，它可以帮助你�
 
 uTools插件，一款强大的剪贴板管理工具
 
+[源代码](https://github.com/ZiuChen/ClipboardManager)
+
 [主页](../project/ClipboardManager/README.md)
 
 ![](./img/ClipboardManager/1.png)
