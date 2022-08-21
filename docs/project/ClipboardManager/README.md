@@ -12,6 +12,7 @@ navbar: false
 [⭐ 插件发布页](https://yuanliao.info/d/5722/29)
 [☁️ 数据迁移与同步指南](./guide/README.md)
 [🚚 更新日志](./log/README.md)
+[👨‍💻 开源代码](https://github.com/ZiuChen/ClipboardManager)
 
 ## 🔰 开始使用
 
