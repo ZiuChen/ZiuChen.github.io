@@ -10,6 +10,7 @@ navbar: false
 </div>
 
 [⭐ 插件发布页](https://yuanliao.info/d/5722/29)
+[🌎 Q&A](./statement//README.md)
 [☁️ 数据迁移与同步指南](./guide/README.md)
 [🚚 更新日志](./log/README.md)
 [👨‍💻 开源代码](https://github.com/ZiuChen/ClipboardManager)
