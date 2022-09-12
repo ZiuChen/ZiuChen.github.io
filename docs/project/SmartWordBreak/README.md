@@ -33,3 +33,4 @@ navbar: false
 ## 📚 安装方式
 
 - 官方插件市场安装
+- 离线插件安装：[百度网盘](https://pan.baidu.com/s/1Shq6mtU9tjhICvcawrp9Ug?pwd=Ziuc)
