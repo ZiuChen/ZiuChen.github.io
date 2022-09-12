@@ -6,7 +6,7 @@ navbar: false
   <img src="./assets/logo.png" alt="logo" />
   <br></br>
   <h1>超级分词</h1>
-  <i>✨ 智慧分词，快速提取文本关键词合并复制/翻译。</i>
+  <i>✨ 智慧分词，快速提取文本关键词。</i>
 </div>
 
 [⭐ 插件发布页](https://yuanliao.info/d/5722/29)
@@ -33,11 +33,3 @@ navbar: false
 ## 📚 安装方式
 
 - 官方插件市场安装
-
-## 💝 感谢赞赏
-
-如果觉得插件帮到了你，可以通过下面的方式赞赏我，这将鼓励我继续维护下去
-
-[催更群 769115389](https://qm.qq.com/cgi-bin/qm/qr?k=9qfHKTaQuWqYN1ys1yiQPdJ4iIlHwgL5&jump_from=webapi)  [Github](https://github.com/ZiuChen)
-
-![donate](https://gcore.jsdelivr.net/gh/ZiuChen/ZiuChen/donate.png)
