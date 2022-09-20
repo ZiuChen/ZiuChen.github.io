@@ -99,9 +99,9 @@ sidebarDepth: 2
 
 ## 如何手动安装`clipboard-event-handler-linux`
 
-如果你是Linux用户，由于插件打包后缺少执行权限，无法正确执行剪贴板监听程序 `clipboard-event-handler-linux`
+如果你是Linux用户，并且剪贴板监听程序未能成功启动，请手动下载 `clipboard-event-handler-linux` 并将其移动到`usr/bin`目录下：
 
-你需要手动下载 `clipboard-event-handler-linux` 并将其移动到`usr/bin`目录下：
+> 由于插件打包后缺少执行权限，无法正确执行剪贴板监听程序 `clipboard-event-handler-linux` 所以需要手动将此文件移出后添加执行权限
 
 ```sh
 # 克隆仓库
