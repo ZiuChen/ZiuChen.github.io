@@ -96,3 +96,21 @@ sidebarDepth: 2
 
 在未来的版本更新中，`超级剪贴板`将开放更多自定义功能给高级用户，帮助你更高效率的管理、使用剪贴板。
 
+
+## 如何手动安装`clipboard-event-handler-linux`
+
+如果你是Linux用户，由于插件打包后缺少执行权限，无法正确执行剪贴板监听程序 `clipboard-event-handler-linux`
+
+你需要手动下载 `clipboard-event-handler-linux` 并将其移动到`usr/bin`目录下：
+
+```sh
+# 克隆仓库
+git clone https://github.com/sudhakar3697/node-clipboard-event.git
+cd node-clipboard-event/platform
+# 修改文件执行权限
+sudo chmod +x ./clipboard-event-handler-linux
+# 拷贝文件至/usr/bin
+sudo cp ./clipboard-event-handler-linux /usr/bin
+```
+
+参考：[https://github.com/sudhakar3697/node-clipboard-event/issues/10](https://github.com/sudhakar3697/node-clipboard-event/issues/10)
