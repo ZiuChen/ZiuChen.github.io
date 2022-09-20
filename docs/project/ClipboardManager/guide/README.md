@@ -99,7 +99,7 @@ sidebarDepth: 2
 
 ## 如何手动安装`clipboard-event-handler-linux`
 
-如果你是Linux用户，并且剪贴板监听程序未能成功启动，请手动下载 `clipboard-event-handler-linux` 并将其移动到`usr/bin`目录下：
+如果你是Linux用户，并且剪贴板监听程序未能成功启动，请手动下载 `clipboard-event-handler-linux` 并将其移动到`~/.local/bin`目录下：
 
 > 由于插件打包后缺少执行权限，无法正确执行剪贴板监听程序 `clipboard-event-handler-linux` 所以需要手动将此文件移出后添加执行权限
 
@@ -109,8 +109,8 @@ git clone https://github.com/sudhakar3697/node-clipboard-event.git
 cd node-clipboard-event/platform
 # 修改文件执行权限
 sudo chmod +x ./clipboard-event-handler-linux
-# 拷贝文件至/usr/bin
-sudo cp ./clipboard-event-handler-linux /usr/bin
+# 拷贝文件至 ~/.local/bin
+sudo cp ./clipboard-event-handler-linux ~/.local/bin
 ```
 
 参考：[https://github.com/sudhakar3697/node-clipboard-event/issues/10](https://github.com/sudhakar3697/node-clipboard-event/issues/10)
