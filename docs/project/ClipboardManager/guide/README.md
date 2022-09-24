@@ -6,6 +6,34 @@ sidebarDepth: 2
 
 # 使用指南
 
+## 如何手动安装`clipboard-event-handler`
+
+新版 `超级剪贴板` 对剪贴板内容更新事件的监听，依赖于可执行文件：
+
+- Windows系统: `clipboard-event-handler-win32.exe`
+- Linux系统: `clipboard-event-handler-linux`
+- MacOS系统: [尚未支持](https://github.com/sudhakar3697/node-clipboard-event/issues/10)
+
+插件每次启动时，将自动检查剪贴板数据文件所在目录下是否存在剪贴板监听程序，如存在，则使用性能更优秀的新的监听策略，如不存在，则仍然使用旧的策略。
+
+请[点击此处（百度网盘）](https://pan.baidu.com/s/14GJIXWDU2F4jsqDDq73aFg?pwd=Ziuc)手动下载**对应系统**的文件，并将其移动到**剪贴板数据文件所在目录**下
+
+### 图文指南
+
+首先进入插件设置页，打开插件数据文件所在路径：
+
+![](../assets/gi1.png)
+![](../assets/gi2.png)
+
+将下载好的剪贴板监听程序拷贝到此目录中：
+
+![](../assets/gi3.png)
+
+拷贝完成后，重启插件，享受新的剪贴板监听机制带来的高性能
+
+- **注意：** 新的机制目前仅支持`Windows`与`Linux`，尚未支持`MacOS`
+- **注意：** 插件使用的二进制文件拷贝自[node-clipboard-event](https://github.com/sudhakar3697/node-clipboard-event)，请避免从其它不可信的来源下载文件，并在下载文件后比较哈希，有能力的也可以从仓库源代码自行编译
+
 ## 如何迁移数据
 
 剪贴板数据存放在
@@ -95,22 +123,3 @@ sidebarDepth: 2
 - `command`: `String` 执行跳转的关键字 前缀`redirect:`是必须的
 
 在未来的版本更新中，`超级剪贴板`将开放更多自定义功能给高级用户，帮助你更高效率的管理、使用剪贴板。
-
-
-## 如何手动安装`clipboard-event-handler-linux`
-
-如果你是Linux用户，并且剪贴板监听程序未能成功启动，请手动下载 `clipboard-event-handler-linux` 并将其移动到`~/.local/bin`目录下：
-
-> 由于插件打包后缺少执行权限，无法正确执行剪贴板监听程序 `clipboard-event-handler-linux` 所以需要手动将此文件移出后添加执行权限
-
-```sh
-# 克隆仓库
-git clone https://github.com/sudhakar3697/node-clipboard-event.git
-cd node-clipboard-event/platform
-# 修改文件执行权限
-sudo chmod +x ./clipboard-event-handler-linux
-# 拷贝文件至 ~/.local/bin
-sudo cp ./clipboard-event-handler-linux ~/.local/bin
-```
-
-参考：[https://github.com/sudhakar3697/node-clipboard-event/issues/10](https://github.com/sudhakar3697/node-clipboard-event/issues/10)
