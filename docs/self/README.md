@@ -76,6 +76,10 @@ editLink: false
 
 ## 获得奖项
 
+### Microsoft Edge 浏览器开拓者大赛 开拓之星
+
+![](./img/reward/2.png)
+
 ### 稀土掘金2022编程挑战赛 三等奖
 
 ![](./img/reward/1.png)
