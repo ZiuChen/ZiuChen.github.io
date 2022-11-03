@@ -16,42 +16,70 @@ sidebarDepth: 2
 
 插件每次启动时，将自动检查剪贴板数据文件所在目录下是否存在剪贴板监听程序，如存在，则使用性能更优秀的新的监听策略，如不存在，则仍然使用旧的策略。
 
-请[点击此处（百度网盘）](https://pan.baidu.com/s/14GJIXWDU2F4jsqDDq73aFg?pwd=Ziuc)或[Github](https://github.com/sudhakar3697/node-clipboard-event/tree/master/platform)手动下载**对应系统**的文件，并将其移动到**剪贴板数据文件所在目录**下
+****
 
-### 具体步骤
+### 1. 下载监听程序
 
-首先进入插件设置页，打开插件数据文件所在路径：
+请[点击此处（百度网盘）](https://pan.baidu.com/s/14GJIXWDU2F4jsqDDq73aFg?pwd=Ziuc)或访问[node-clipboard-event](https://github.com/sudhakar3697/node-clipboard-event/tree/master/platform)手动下载**对应系统**的文件，并将其移动到**剪贴板数据文件所在目录**下
+
+插件使用的二进制文件拷贝自[node-clipboard-event](https://github.com/sudhakar3697/node-clipboard-event)，请避免从其它不可信的来源下载文件，并在下载文件后比较哈希，有能力的也可以从仓库源代码自行编译
+
+### 2. 找到剪贴板数据文件所在目录
+
+进入插件设置页（右上角💡按钮），打开插件数据文件所在路径：
 
 ![](../assets/gi1.png)
 ![](../assets/gi2.png)
 
-将下载好的剪贴板监听程序拷贝到此目录中：
-Win:
+### 3. 将监听程序拷贝到目录中
+
+#### Windows:
+
 ![](../assets/gi3.png)
-Linux:
+
+#### Linux:
+
 ![](../assets/gi3-2.png)
-Mac:
+
+#### Mac:
+
 ![](../assets/gi3-3.png)
 
-拷贝完成后，重启插件，享受新的剪贴板监听机制带来的高性能
+### 4. 【重要】注意事项
 
-- **注意：** `MacOS`拷贝完成后需要对插件进行签名&授权才能正常使用具体步骤如下
+#### MacOS需要特殊配置
 
-1. 签名
-	打开终端输入以下命令
-  ```sh
-  sudo codesign --force --deep --sign - 
-  ```
-  ![](../assets/sign-mac.png)
-	然后将此目录中的clipboard-event-handler-mac文件拖入终端执行命令
-  ![](../assets/sign-mac-2.png)
-2. 授权
-	左上角🍎 -> 系统偏好设置 -> 安全性与隐私 -> 通用 -> 点击允许
-	![](../assets/mac-chmod.jpg)
-	
-	
+`MacOS`拷贝完成后需要对插件进行签名&授权才能正常使用具体步骤如下
 
-- **注意：** 插件使用的二进制文件拷贝自[node-clipboard-event](https://github.com/sudhakar3697/node-clipboard-event)，请避免从其它不可信的来源下载文件，并在下载文件后比较哈希，有能力的也可以从仓库源代码自行编译
+**1. 签名**
+
+打开终端输入以下命令
+
+```sh
+sudo codesign --force --deep --sign - 
+```
+
+![](../assets/sign-mac.png)
+
+然后将此目录中的`clipboard-event-handler-mac`文件拖入终端执行命令
+
+![](../assets/sign-mac-2.png)
+
+**2. 授权**
+
+*左上角🍎* -> *系统偏好设置* -> *安全性与隐私* -> *通用* -> *点击允许*
+
+![](../assets/mac-chmod.jpg)
+
+#### 监听程序不生效如何排查？
+
+请务必完整按照教程完成安装，如果程序仍未生效，请按照如下方式排查：
+
+- 监听程序拷贝完成后，需要重启插件方可生效
+- 设置页`剪贴板监听程序状态`选项是否为`已安装`
+- 系统进程管理器中是否存在`clipboard-event-handler-xxxxx`的进程
+
+使用中遇到任何问题，请尝试通过论坛或加入QQ群反馈
 
 ## 如何迁移数据
 
