@@ -12,11 +12,11 @@ sidebarDepth: 2
 
 - Windows系统: `clipboard-event-handler-win32.exe`
 - Linux系统: `clipboard-event-handler-linux`
-- MacOS系统: [尚未支持](https://github.com/sudhakar3697/node-clipboard-event/issues/10)
+- MacOS系统: `clipboard-event-handler-mac`
 
 插件每次启动时，将自动检查剪贴板数据文件所在目录下是否存在剪贴板监听程序，如存在，则使用性能更优秀的新的监听策略，如不存在，则仍然使用旧的策略。
 
-请[点击此处（百度网盘）](https://pan.baidu.com/s/14GJIXWDU2F4jsqDDq73aFg?pwd=Ziuc)手动下载**对应系统**的文件，并将其移动到**剪贴板数据文件所在目录**下
+请[点击此处（百度网盘）](https://pan.baidu.com/s/14GJIXWDU2F4jsqDDq73aFg?pwd=Ziuc)或[Github](https://github.com/sudhakar3697/node-clipboard-event/tree/master/platform)手动下载**对应系统**的文件，并将其移动到**剪贴板数据文件所在目录**下
 
 ### 具体步骤
 
@@ -26,13 +26,31 @@ sidebarDepth: 2
 ![](../assets/gi2.png)
 
 将下载好的剪贴板监听程序拷贝到此目录中：
-
+Win:
 ![](../assets/gi3.png)
+Linux:
 ![](../assets/gi3-2.png)
+Mac:
+![](../assets/gi3-3.png)
 
 拷贝完成后，重启插件，享受新的剪贴板监听机制带来的高性能
 
-- **注意：** 新的机制目前仅支持`Windows`与`Linux`，尚未支持`MacOS`
+- **注意：** `MacOS`拷贝完成后需要对插件进行签名&授权才能正常使用具体步骤如下
+
+1. 签名
+	打开终端输入以下命令
+  ```sh
+  sudo codesign --force --deep --sign - 
+  ```
+  ![](../assets/sign-mac.png)
+	然后将此目录中的clipboard-event-handler-mac文件拖入终端执行命令
+  ![](../assets/sign-mac-2.png)
+2. 授权
+	左上角🍎 -> 系统偏好设置 -> 安全性与隐私 -> 通用 -> 点击允许
+	![](../assets/mac-chmod.jpg)
+	
+	
+
 - **注意：** 插件使用的二进制文件拷贝自[node-clipboard-event](https://github.com/sudhakar3697/node-clipboard-event)，请避免从其它不可信的来源下载文件，并在下载文件后比较哈希，有能力的也可以从仓库源代码自行编译
 
 ## 如何迁移数据
