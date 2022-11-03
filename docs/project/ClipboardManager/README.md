@@ -9,11 +9,11 @@ navbar: false
   <i>✨ 强大的剪贴板管理工具。</i>
 </div>
 
-[⭐ 插件发布页](https://yuanliao.info/d/5722/29)
-[🌎 Q&A](./statement/README.md)
-[☁️ 数据迁移|云同步|自定义功能](./guide/README.md)
+[⭐ 开源代码](https://github.com/ZiuChen/ClipboardManager)
+[🌎 疑难解答](./statement/README.md)
+[🚀 进阶功能](./guide/README.md)
 [🚚 更新日志](./log/README.md)
-[👨‍💻 开源代码](https://github.com/ZiuChen/ClipboardManager)
+[🎈 插件发布页](https://yuanliao.info/d/5722/29)
 
 ## 🔰 开始使用
 
