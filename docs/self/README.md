@@ -10,11 +10,13 @@ editLink: false
 
 北京交通大学（BeijingJiaoTong University）电子信息工程学院本科在读
 
-* 擅长前端工程化开发
-* 掌握`JS` `TS` `HTML` `CSS`, 熟悉`DOM` `HTTP`协议等前端领域知识, 能够熟练运用`ES6` `HTML5` `CSS3`等新标准进行开发
-* 熟练使用`Vue` `React`框架及相关工具开发应用, 能够用`Bootstrap` `TailwindCSS`框架快速开发应用
-* 熟悉`NodeJS`, 熟练使用 `Webpack`, `Vite` 等构建工具, 了解`Express.js`基本使用, 了解前端打包基本原理, 能够将项目部署至`Nginx`
-* 正在学习嵌入式技术
+* 熟悉`ES6`特性, 有前端领域开发经验, 能独立完成基础的前端开发工作;
+* 熟练使用`Vue`框架及相关工具开发应用, 阅读过部分`Vue`源码, 了解`Vue`响应式实现原理;
+* 掌握`NodeJS`基本使用, 能够基于`NodeJS`编写开发工具或搭建Web服务;
+* 了解`Webpack`基本配置和使用, 有`Webpack` `Vite`等前端工程化工具使用经验;
+* 了解`Typescript`, 有`Typescript`的项目使用经历;
+* 良好的`Git`操作, 清晰的`Commit`提交, 保证代码质量;
+* 对前端学习抱有热情, 有良好的学习能力, 能够快速学习掌握新知识;
 
 ## 技术栈
 
@@ -27,9 +29,6 @@ editLink: false
 
 ![](https://img.shields.io/badge/Vue-35495E?style=flat-square&logo=vuedotjs&logoColor=4FC08D)
 ![](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)
-![](https://img.shields.io/badge/Bootstrap-563D7C?style=flat-square&logo=bootstrap&logoColor=white)
-![](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)
-![](https://img.shields.io/badge/ThreeJs-black?style=flat-square&logo=three.js&logoColor=white)
 
 ![](https://img.shields.io/badge/Webpack-8DD6F9?style=flat-square&logo=Webpack&logoColor=white)
 ![](https://img.shields.io/badge/Vite-B73BFE?style=flat-square&logo=vite&logoColor=FFD62E)
