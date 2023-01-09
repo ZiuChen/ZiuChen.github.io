@@ -1,14 +1,11 @@
 {
-  "name": "ziuchen-docs",
   "scripts": {
-    "docs:dev": "vuepress dev docs",
-    "docs:build": "vuepress build docs"
+    "dev": "vitepress dev docs",
+    "build": "vitepress build docs",
+    "preview": "vitepress preview docs"
   },
   "devDependencies": {
-    "@vuepress/plugin-active-header-links": "^1.9.7",
-    "@vuepress/plugin-back-to-top": "^1.9.7",
-    "@vuepress/plugin-medium-zoom": "^1.9.7",
-    "vue-template-compiler": "^2.7.8",
-    "vuepress": "^1.9.7"
+    "vitepress": "1.0.0-alpha.35",
+    "vue": "^3.2.45"
   }
 }

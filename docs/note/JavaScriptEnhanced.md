@@ -1,6 +1,4 @@
 ---
-sidebar: auto
-sidebarDepth: 2
 editLink: false
 ---
 
@@ -1455,9 +1453,9 @@ inherit(Student, Person)
 
 - 遇到`<script>`标签则向服务器请求下载`.js`文件
 
-<img src="JavaScriptEnhanced.assets/image-20221118222207332-16687813334481.png" alt="浏览器解析HTML过程" style="zoom:80%;" />
+<img src="./JavaScriptEnhanced.assets/image-20221118222207332-16687813334481.png" alt="浏览器解析HTML过程" style="zoom:80%;" />
 
-<img src="JavaScriptEnhanced.assets/image-20221118222311200-16687813941873.png" alt="浏览器是和如何工作的" style="zoom:80%;" />
+<img src="./JavaScriptEnhanced.assets/image-20221118222311200-16687813941873.png" alt="浏览器是和如何工作的" style="zoom:80%;" />
 
 [How browsers work](https://web.dev/howbrowserswork/)
 
@@ -1582,7 +1580,7 @@ inherit(Student, Person)
 
 在开发者工具的图层工具中可以看到，两个元素`.box1` 和 `.box2`都是在一个层（Document）下渲染的：
 
-![image-20221122103111654](JavaScriptEnhanced.assets/image-20221122103111654.png)
+![image-20221122103111654](./JavaScriptEnhanced.assets/image-20221122103111654.png)
 
 ##### 案例2：分层渲染
 
@@ -1597,7 +1595,7 @@ inherit(Student, Person)
 }
 ```
 
-![image-20221122103256116](JavaScriptEnhanced.assets/image-20221122103256116.png)
+![image-20221122103256116](./JavaScriptEnhanced.assets/image-20221122103256116.png)
 
 ##### 案例3：transform 3D
 
@@ -1615,7 +1613,7 @@ inherit(Student, Person)
 }
 ```
 
-![image-20221122103715428](JavaScriptEnhanced.assets/image-20221122103715428.png)
+![image-20221122103715428](./JavaScriptEnhanced.assets/image-20221122103715428.png)
 
 ##### 案例4：transition+transform
 
@@ -1733,7 +1731,7 @@ JavaScript代码下载好后，是如何一步步被执行的？
 
 ### JavaScript V8引擎
 
-![image-20221125090752249](JavaScriptEnhanced.assets/image-20221125090752249.png)
+![image-20221125090752249](./JavaScriptEnhanced.assets/image-20221125090752249.png)
 
 JS源代码经过解析，生成抽象语法树（词法分析器、语法分析器），经过ignition转为字节码（二进制、跨平台），即可由CPU执行
 
@@ -1753,7 +1751,7 @@ JS源代码经过解析，生成抽象语法树（词法分析器、语法分析
   - 但是，机器码实际上也会被还原为ByteCode，这是因为如果后续执行函数的过程中，类型发生了变化（比如sum函数原来执行的是number类型，后来执行变成了string类型），之前优化的机器码并不能正确的处理运算，就会逆向的转换成字节码
   - 官方文档：https://v8.dev/blog/turbofan-jit
 
-![image-20221125094148365](JavaScriptEnhanced.assets/image-20221125094148365.png)
+![image-20221125094148365](./JavaScriptEnhanced.assets/image-20221125094148365.png)
 
 Blink 获取到源码 => 转为Stream => Scanner扫描器
 
