@@ -7,7 +7,7 @@ navbar: false
 
 <p style="text-align: center">✨ 强大的剪贴板管理工具。</p>
 
-[⭐ 开源代码](https://github.com/ZiuChen/ClipboardManager)  [🌎 疑难解答](./statement)  [🚀 进阶功能](./guide)  [🚚 更新日志](./log)  [🎈 插件发布页](https://yuanliao.info/d/5722/29)
+[⭐ 开源代码](https://github.com/ZiuChen/ClipboardManager)  [🌎 疑难解答](./statement/)  [🚀 进阶功能](./guide/)  [🚚 更新日志](./log/)  [🎈 插件发布页](https://yuanliao.info/d/5722/29)
 
 ## 🔰 开始使用
 
