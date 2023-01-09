@@ -1,6 +1,12 @@
 # 基于VitePress的个人主页
 
-`Github Page` + `Gitee Page` + `Vercel`
+*Github Action驱动，一次推送 多端部署*
+
+[Github Page](https://ziuchen.github.io/)
+
+[Gitee Page](https://ziuchen.gitee.io/)
+
+[Vercel](https://ziuchen.vercel.app/)
 
 ```sh
 # 安装依赖
