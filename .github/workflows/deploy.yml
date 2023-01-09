@@ -28,13 +28,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build VuePress site
-        run: pnpm docs:build
+      - name: Build VitePress site
+        run: pnpm build
 
       - name: Deploy Github Pages
         uses: JamesIves/github-pages-deploy-action@releases/v4
         with:
-          folder: docs/.vuepress/dist
+          folder: docs/.vitepress/dist
           branch: gh-pages
 
   Deploy:
