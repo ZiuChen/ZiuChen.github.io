@@ -22,22 +22,22 @@
 
 进入插件设置页（右上角💡按钮），打开插件数据文件所在路径：
 
-![](./assets/gi1.png)
-![](./assets/gi2.png)
+![](../assets/gi1.png)
+![](../assets/gi2.png)
 
 ### 3. 将监听程序拷贝到目录中
 
 #### Windows:
 
-![](./assets/gi3.png)
+![](../assets/gi3.png)
 
 #### Linux:
 
-![](./assets/gi3-2.png)
+![](../assets/gi3-2.png)
 
 #### Mac:
 
-![](./assets/gi3-3.png)
+![](../assets/gi3-3.png)
 
 ### 4. 【重要】注意事项
 
@@ -53,17 +53,17 @@
 sudo codesign --force --deep --sign - 
 ```
 
-![](./assets/sign-mac.png)
+![](../assets/sign-mac.png)
 
 然后将此目录中的`clipboard-event-handler-mac`文件拖入终端执行命令
 
-![](./assets/sign-mac-2.png)
+![](../assets/sign-mac-2.png)
 
 **2. 授权**
 
 *左上角🍎* -> *系统偏好设置* -> *安全性与隐私* -> *通用* -> *点击允许*
 
-![](./assets/mac-chmod.jpg)
+![](../assets/mac-chmod.jpg)
 
 #### 监听程序不生效如何排查？
 
@@ -96,13 +96,13 @@ sudo codesign --force --deep --sign -
 
 右键目录，`坚果云`/`同步该文件夹`，将此文件夹加入到坚果云的同步服务中
 
-![](././assets/img2.png)
+![](./../assets/img2.png)
 
 这样，每次剪贴板内容更新都将自动触发坚果云的同步服务，将剪贴板数据同步到云端
 
 其他安装了坚果云的设备也将自动同步更新
 
-![](./assets/img3.png)
+![](../assets/img3.png)
 
 ### OneDrive
 
@@ -159,8 +159,8 @@ sudo codesign --force --deep --sign -
 
 需要注意的是，因为自定义功能按钮实现的是**携带数据跳转不同插件**，所以`redirect`后的内容并不应该是普通关键字（普通关键字仅能作为插件入口，而不能携带数据），而应该是`文本`/`图片`/`文件或文件夹`：
 
-![](./assets/gi4.png)
-![](./assets/gi5.png)
+![](../assets/gi4.png)
+![](../assets/gi5.png)
 
 
 - `id`: `String` 全局唯一 必须以`custom`开头 建议以时间戳为后缀

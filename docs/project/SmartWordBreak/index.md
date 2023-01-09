@@ -7,7 +7,7 @@ navbar: false
 
 <p style="text-align: center">✨ 智慧分词，快速提取文本关键词。</p>
 
-[⭐ 插件发布页](https://yuanliao.info/d/5722/29)  [🌎 Q&A](./statement)  [🚚 更新日志](./log)
+[⭐ 插件发布页](https://yuanliao.info/d/5722/29)  [🌎 Q&A](./statement/)  [🚚 更新日志](./log/)
 
 ## 🔰 开始使用
 
