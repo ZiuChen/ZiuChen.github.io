@@ -4,9 +4,10 @@ navbar: false
 ---
 
 <script setup>
+  import url from './assets/logo.png'
   const titleInfo = {
     subTitle: '✨ 强大的剪贴板管理工具。',
-    logo: './assets/logo.png',
+    logo: url,
     linkList: [
       { content: '⭐ 开源代码', target: 'https://github.com/ZiuChen/ClipboardManager' },
       { content: '🌎 疑难解答', target: './statement/' },
