@@ -3,11 +3,19 @@ title: 超级分词
 navbar: false
 ---
 
-<img src="./assets/logo.png" alt="logo" style="margin: 0 auto" />
+<script setup>
+  const titleInfo = {
+    subTitle: '✨ 智慧分词，快速提取文本关键词。',
+    logo: './assets/logo.png',
+    linkList: [
+      { content: '⭐ 插件发布页', target: 'https://yuanliao.info/d/5722/29' },
+      { content: '🌎 Q&A', target: './statement/' },
+      { content: '🚚 更新日志', target: './log/' },
+    ]
+  }
+</script>
 
-<p style="text-align: center">✨ 智慧分词，快速提取文本关键词。</p>
-
-[⭐ 插件发布页](https://yuanliao.info/d/5722/29)  [🌎 Q&A](./statement/)  [🚚 更新日志](./log/)
+<Title v-bind="titleInfo" />
 
 ## 🔰 开始使用
 

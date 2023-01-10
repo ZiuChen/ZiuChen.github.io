@@ -3,11 +3,21 @@ title: 超级剪贴板
 navbar: false
 ---
 
-<img src="./assets/logo.png" alt="logo" style="margin: 0 auto" />
+<script setup>
+  const titleInfo = {
+    subTitle: '✨ 强大的剪贴板管理工具。',
+    logo: './assets/logo.png',
+    linkList: [
+      { content: '⭐ 开源代码', target: 'https://github.com/ZiuChen/ClipboardManager' },
+      { content: '🌎 疑难解答', target: './statement/' },
+      { content: '🚀 进阶功能', target: './guide/' },
+      { content: '🚚 更新日志', target: './log/' },
+      { content: '🎈 插件发布页', target: 'https://yuanliao.info/d/5722/29' },
+    ]
+  }
+</script>
 
-<p style="text-align: center">✨ 强大的剪贴板管理工具。</p>
-
-[⭐ 开源代码](https://github.com/ZiuChen/ClipboardManager)  [🌎 疑难解答](./statement/)  [🚀 进阶功能](./guide/)  [🚚 更新日志](./log/)  [🎈 插件发布页](https://yuanliao.info/d/5722/29)
+<Title v-bind="titleInfo" />
 
 ## 🔰 开始使用
 
