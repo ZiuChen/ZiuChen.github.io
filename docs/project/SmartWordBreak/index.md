@@ -4,9 +4,10 @@ navbar: false
 ---
 
 <script setup>
+  import url from './assets/logo.png'
   const titleInfo = {
     subTitle: '✨ 智慧分词，快速提取文本关键词。',
-    logo: './assets/logo.png',
+    logo: url,
     linkList: [
       { content: '⭐ 插件发布页', target: 'https://yuanliao.info/d/5722/29' },
       { content: '🌎 Q&A', target: './statement/' },
