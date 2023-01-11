@@ -5,6 +5,7 @@ export default defineConfig({
   description: 'Unlimited Progress.',
   ignoreDeadLinks: true,
   lastUpdated: true,
+  head: [['link', { rel: 'icon', href: '/logo.png' }]],
   markdown: {
     lineNumbers: true
   },
