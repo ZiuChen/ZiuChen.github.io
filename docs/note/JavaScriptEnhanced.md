@@ -2529,6 +2529,230 @@ async function getData() {
 getData()
 ```
 
+## let与const
+
+- `let`与`var`都用于声明变量
+- `const`声明的变量不允许被修改，如果是引用类型变量，则可以修改引用内的属性，不可修改变量本身
+- 与`var`的区别：
+  - 不允许重复声明、不存在变量提升
+  - 不会被添加到`window`上，不能通过`window.xxx`访问
+
+### 作用域提升
+
+`var`定义的变量会自动进行变量提升
+
+```js
+console.log(typeof name) // undefined
+var name = 'Ziu'
+```
+
+在声明`name`前就可以访问到这个变量，且其值为`undefined`
+
+但是用`let` `const`定义的变量在初始化前访问会抛出错误
+
+```js
+console.log(address) // 报错
+let address = 'China'
+```
+
+- 变量会被创建在包含他们的词法环境被实例化时，但是是不可以访问它们的，直到词法绑定被求值
+- 在执行上下文的词法环境创建出来的时候，变量事实上已经被创建了，只是这个变量是不能被访问的
+
+### 暂时性死区
+
+在作用域内，从作用域开始到变量被定义之前的区域被称为暂时性死区，这部分里是不能访问变量的。
+
+```js
+function foo() {
+  console.log(name, age) // 报错
+  console.log('Hello, World!')
+  let name = 'Ziu'
+  let age = 18
+}
+
+foo()
+```
+
+- 从作用域的顶部一直到变量声明完成之前，这个变量处在暂时性死区（TDZ, Temporal dead zone）
+- 暂时性死区和定义的位置没有关系，和代码的执行顺序有关系
+- 暂时性死区形成之后，在该区域内该标识符都不能被访问
+
+```js
+// 代码报错：
+console.log(name)
+let name = 'Hello, World!'
+```
+
+```js
+// 代码正确执行
+function foo() {
+  console.log(name)
+}
+let name = 'Hello, World!'
+foo() // Hello, World!
+```
+
+在上例中，先执行`let name = 'Hello, World!'`，随后再执行`foo()`输出`name`变量，这样就不会报错。
+
+所以得出结论：暂时性死区与代码的执行顺序有关
+
+----
+
+下述代码能正常执行：调用`foo()`时，现在内部作用域查找`message`，没找到则到外部作用域找到`message`并输出
+
+```js
+let message = 'Hello, World!'
+function foo() {
+  console.log(message)
+}
+foo()
+```
+
+但是稍作修改，下面的代码执行将报错：这是因为函数`foo()`内部形成了暂时性死区，函数内定义了`message`，所以优先访问内部的`message`变量，在输出语句访问它时正处于暂时性死区中，所以会抛出错误
+
+```js
+let message = 'Hello, World!'
+function foo() {
+  console.log(message)
+  let message = 'Ziu'
+}
+foo()
+```
+
+### 变量保存位置
+
+既然通过`let const`声明的变量不会被保存在`window`上，那他们保存在哪里呢？我们从ECMA文档入手
+
+> A Global Environment Record is logically a single record but it is specified as a composite encapsulating an [Object Environment Record](https://tc39.es/ecma262/multipage/executable-code-and-execution-contexts.html#sec-object-environment-records) and a [Declarative Environment Record](https://tc39.es/ecma262/multipage/executable-code-and-execution-contexts.html#sec-declarative-environment-records).
+
+全局环境记录包括：1 对象环境记录 2 声明环境记录
+
+Table 20: Additional Fields of [Global Environment Records](https://tc39.es/ecma262/multipage/executable-code-and-execution-contexts.html#sec-global-environment-records)
+
+| Field Name            | Value                                                        | Meaning                                                      |
+| --------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [[ObjectRecord]]      | an [Object Environment Record](https://tc39.es/ecma262/multipage/executable-code-and-execution-contexts.html#sec-object-environment-records) | Binding object is the [global object](https://tc39.es/ecma262/multipage/global-object.html#sec-global-object). It contains global built-in bindings as well as [FunctionDeclaration](https://tc39.es/ecma262/multipage/ecmascript-language-functions-and-classes.html#prod-FunctionDeclaration), [GeneratorDeclaration](https://tc39.es/ecma262/multipage/ecmascript-language-functions-and-classes.html#prod-GeneratorDeclaration), [AsyncFunctionDeclaration](https://tc39.es/ecma262/multipage/ecmascript-language-functions-and-classes.html#prod-AsyncFunctionDeclaration), [AsyncGeneratorDeclaration](https://tc39.es/ecma262/multipage/ecmascript-language-functions-and-classes.html#prod-AsyncGeneratorDeclaration), and [VariableDeclaration](https://tc39.es/ecma262/multipage/ecmascript-language-statements-and-declarations.html#prod-VariableDeclaration) bindings in global code for the associated [realm](https://tc39.es/ecma262/multipage/executable-code-and-execution-contexts.html#realm). |
+| [[GlobalThisValue]]   | an Object                                                    | The value returned by `this` in global scope. [Hosts](https://tc39.es/ecma262/multipage/overview.html#host) may provide any ECMAScript Object value. |
+| [[DeclarativeRecord]] | a [Declarative Environment Record](https://tc39.es/ecma262/multipage/executable-code-and-execution-contexts.html#sec-declarative-environment-records) | Contains bindings for all declarations in global code for the associated [realm](https://tc39.es/ecma262/multipage/executable-code-and-execution-contexts.html#realm) code except for [FunctionDeclaration](https://tc39.es/ecma262/multipage/ecmascript-language-functions-and-classes.html#prod-FunctionDeclaration), [GeneratorDeclaration](https://tc39.es/ecma262/multipage/ecmascript-language-functions-and-classes.html#prod-GeneratorDeclaration), [AsyncFunctionDeclaration](https://tc39.es/ecma262/multipage/ecmascript-language-functions-and-classes.html#prod-AsyncFunctionDeclaration), [AsyncGeneratorDeclaration](https://tc39.es/ecma262/multipage/ecmascript-language-functions-and-classes.html#prod-AsyncGeneratorDeclaration), and [VariableDeclaration](https://tc39.es/ecma262/multipage/ecmascript-language-statements-and-declarations.html#prod-VariableDeclaration) bindings. |
+| [[VarNames]]          | a [List](https://tc39.es/ecma262/multipage/ecmascript-data-types-and-values.html#sec-list-and-record-specification-type) of Strings | The string names bound by [FunctionDeclaration](https://tc39.es/ecma262/multipage/ecmascript-language-functions-and-classes.html#prod-FunctionDeclaration), [GeneratorDeclaration](https://tc39.es/ecma262/multipage/ecmascript-language-functions-and-classes.html#prod-GeneratorDeclaration), [AsyncFunctionDeclaration](https://tc39.es/ecma262/multipage/ecmascript-language-functions-and-classes.html#prod-AsyncFunctionDeclaration), [AsyncGeneratorDeclaration](https://tc39.es/ecma262/multipage/ecmascript-language-functions-and-classes.html#prod-AsyncGeneratorDeclaration), and [VariableDeclaration](https://tc39.es/ecma262/multipage/ecmascript-language-statements-and-declarations.html#prod-VariableDeclaration) declarations in global code for the associated [realm](https://tc39.es/ecma262/multipage/executable-code-and-execution-contexts.html#realm). |
+
+由上表可知，对象环境记录也就是`global object`，在浏览器中也就是`window`对象，它包含了全局内置绑定：函数声明、生成器声明、异步函数声明、异步生成器声明、变量声明（特指通过`var`声明的变量）
+
+而在声明环境记录中，它包含了除了上述内容的声明，比如`const let`声明的变量
+
+### 块级作用域
+
+用花括号括起来的代码块是一个块级作用域，在ES5之前，只有全局作用域与函数作用域
+
+```js
+{
+  var bar = 'Ziu'
+}
+console.log(bar) // Ziu
+```
+
+在代码块内声明的变量，在外部仍然可以访问到。
+
+但是通过`let const function class`声明的变量具有块级作用域限制：
+
+```js
+{
+  let foo = 'foo'
+  function bar() {
+    console.log('bar')
+  }
+  class Person {}
+}
+
+console.log(foo) // 报错
+bar() // bar 函数能够被调用
+var p = new Person() // 报错
+```
+
+但是，函数虽然有块级作用域限制，但是仍然是可以在外界被访问的
+
+- 这是因为引擎会对函数的声明进行特殊处理，允许其像var那样提升
+
+- 但是与var不同的是，var声明的变量可以在其之前被访问，其值为`undefined`，但是函数不能在代码块之前访问
+
+```js
+bar() // 报错
+{
+  function bar() {
+    console.log('bar')
+  }
+}
+```
+
+### 开发中的应用
+
+使用`var`定义的变量会被自动提升，在某些情况下会导致非预期行为：
+
+#### 使用var的非预期行为
+
+我们希望为每个按钮添加监听事件，点击后在控制台输出按钮编号，然而通过`var`定义循环变量`i`时，其所在作用域是全局的。代码执行完毕后，当多个回调函数访问位于全局的`i`时，它的值已经变成了`3`，所以每次点击控制台都会输出`btn 4 is clicked`
+
+```html
+<button>按钮1</button>
+<button>按钮2</button>
+<button>按钮3</button>
+<button>按钮4</button>
+<script>
+  const btns = document.querySelectorAll('button')
+  for (var i = 1; i < btns.length; i++) {
+    const btn = btns[i]
+    btn.onclick = function () {
+      console.log(`btn ${i + 1} is clicked`) // btn 4 is clicked
+    }
+  }
+</script>
+```
+
+#### 早期解决方案
+
+当然，在没有`let const`的早期也有解决方法：为每个DOM引用添加额外属性`index`，保存当前次遍历时的`i`值
+
+```js
+const btns = document.querySelectorAll('button')
+for (var i = 0; i < btns.length; i++) {
+  const btn = btns[i]
+  btn.index = i
+  btn.onclick = function () {
+    console.log(`btn ${this.index + 1} is clicked`) // btn 0,1,2,3 is clicked
+  }
+}
+```
+
+也可以使用立即执行函数，每次添加监听回调函数时都创建一个新的作用域，并且将当前的`i`值作为参数传入，这样每次回调函数在被调用时访问到的都是各自的词法环境（作用域），传入函数的`m`值是固定的
+
+这里用到了闭包，立即执行函数会拥有自己的AO，而每次遍历时立即执行函数的AO都通过闭包保存了下来，这样挂载到AO上的变量就是各自独立的了
+
+```js
+const btns = document.querySelectorAll('button')
+for (var i = 0; i < btns.length; i++) {
+  const btn = btns[i]
+  ;(function (m) {
+    btn.onclick = function () {
+      console.log(`btn ${m + 1} is clicked`) // btn 0,1,2,3 is clicked
+    }
+  })(i)
+}
+```
+
+#### 使用let解决
+
+如果使用`let`来定义循环用的临时变量`i`，那么每次遍历时都是一个新的作用域，变量`i`不会泄露到全局，这样每个回调函数在被调用时访问到的`i`都来自各自的词法环境，都来自作用域
+
+```js
+const btns = document.querySelectorAll('button')
+for (let i = 0; i < btns.length; i++) {
+  const btn = btns[i]
+  btn.onclick = function () {
+    console.log(`btn ${i + 1} is clicked`) // btn 0,1,2,3 is clicked
+  }
+}
+```
+
 ## await async 事件循环
 
 - async await
