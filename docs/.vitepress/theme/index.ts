@@ -1,5 +1,5 @@
 import DefaultTheme from 'vitepress/theme'
-import { onMounted, watch, nextTick, watchEffect } from 'vue'
+import { nextTick, watchEffect } from 'vue'
 import { inBrowser, useRouter } from 'vitepress'
 import mediumZoom from 'medium-zoom'
 import Title from '../components/Title.vue'
