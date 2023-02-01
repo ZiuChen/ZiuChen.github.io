@@ -12,8 +12,8 @@ navbar: false
       { content: '⭐ 开源代码', target: 'https://github.com/ZiuChen/ClipboardManager' },
       { content: '🌎 疑难解答', target: './statement/' },
       { content: '🚀 进阶功能', target: './guide/' },
+      { content: '👑 插件会员', target: './vip/' },
       { content: '🚚 更新日志', target: './log/' },
-      { content: '🎈 插件发布页', target: 'https://yuanliao.info/d/5722/29' },
     ]
   }
 </script>

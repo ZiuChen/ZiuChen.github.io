@@ -92,17 +92,7 @@ sudo codesign --force --deep --sign -
 自`v2.0.0`起，可以通过开通插件会员启用**WebDav同步功能**
 :::
 
-可以通过自建WebDav服务器或使用支持WebDav服务的网盘来保存自己的剪贴板数据
-
-获取`服务器地址 账号 密钥`后，仅需在**插件内的设置页面**添加WebDav配置即可
-
-配置好插件内的WebDav服务后，插件首页工具栏（右上角）将出现上传/下载按钮，点击按钮可以主动同步/下载剪贴板历史数据
-
-
-相关链接：
-
-- [坚果云WebDav](https://help.jianguoyun.com/?tag=webdav)
-- [2022年还有哪些支持WebDAV的网盘？](https://www.zhihu.com/question/347182171)
+👉👉👉[插件会员/WebDav同步功能](../vip/index.md#webdav同步功能)👈👈👈
 
 ### 坚果云同步文件夹 <Badge type="warning" text="仅旧版本" />
 
