@@ -10,8 +10,8 @@ navbar: false
     logo: url,
     linkList: [
       { content: '⭐ 开源代码', target: 'https://github.com/ZiuChen/ClipboardManager' },
+      { content: '🚀 使用指南', target: './guide/' },
       { content: '🌎 疑难解答', target: './statement/' },
-      { content: '🚀 进阶功能', target: './guide/' },
       { content: '👑 插件会员', target: './vip/' },
       { content: '🚚 更新日志', target: './log/' },
     ]
