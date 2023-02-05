@@ -8,6 +8,11 @@
   z-index: 21;
 }
 
+/* SideBar scrollbar */
+.VPSidebar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Color Variables */
 
 :root {
