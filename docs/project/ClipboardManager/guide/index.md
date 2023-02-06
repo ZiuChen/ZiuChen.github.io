@@ -98,13 +98,13 @@ sudo codesign --force --deep --sign -
 
 右键目录，`坚果云`/`同步该文件夹`，将此文件夹加入到坚果云的同步服务中
 
-![](./../assets/img2.png)
+![](./../assets/guide-jianguo-1.png)
 
 这样，每次剪贴板内容更新都将自动触发坚果云的同步服务，将剪贴板数据同步到云端
 
 其他安装了坚果云的设备也将自动同步更新
 
-![](../assets/img3.png)
+![](../assets/guide-jianguo-2.png)
 
 ### OneDrive
 
