@@ -39,17 +39,12 @@ navbar: false
 
 --------
 
-![](./assets/img1.png)
+![](./assets/hero-1.png)
+![](./assets/hero-2.png)
 
 ## 📚 安装方式
 
 - 官方插件市场安装
 - 离线插件安装：[百度网盘](https://pan.baidu.com/s/14GJIXWDU2F4jsqDDq73aFg?pwd=Ziuc)
 
-## 💝 感谢赞赏
-
-如果觉得插件帮到了你，可以通过下面的方式赞赏我，这将鼓励我继续维护下去
-
 [催更群 769115389](https://qm.qq.com/cgi-bin/qm/qr?k=9qfHKTaQuWqYN1ys1yiQPdJ4iIlHwgL5&jump_from=webapi)  [Github](https://github.com/ZiuChen)
-
-![donate](https://gcore.jsdelivr.net/gh/ZiuChen/ZiuChen/donate.png)
