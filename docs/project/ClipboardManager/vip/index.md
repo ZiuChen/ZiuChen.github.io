@@ -9,13 +9,15 @@
 ## 会员权益
 
 - **插件会员**
-  - `WebDav同步功能 轻点鼠标即可多端同步` <Badge type="tip" text="已上线" />
-  - `最多支持保存2000条历史记录` <Badge type="tip" text="已上线" />
+  - `WebDav数据多端同步` <Badge type="tip" text="已上线" />
+  - `支持保存2000条历史记录` <Badge type="tip" text="已上线" />
   - `不限制历史记录过期时间` <Badge type="tip" text="已上线" />
-  - `文本内容增强 识别文本内容为色值、链接` <Badge type="tip" text="已上线" />
+  - `文本内容增强, 按住Ctrl/Command点击链接 可以直接跳转` <Badge type="tip" text="已上线" />
+  - `图片预览增强, 按住Ctrl/Command点击图片 可以直接预览` <Badge type="tip" text="已上线" />
+  - `文件预览增强, 按住Ctrl/Command点击文件 可以打开其所在文件夹` <Badge type="tip" text="已上线" />
   - `自定义分类排序` <Badge type="tip" text="已上线" />
   - `预览页代码高亮` <Badge type="tip" text="已上线" />
-  - `支持关闭剪贴板图片记录` <Badge type="tip" text="已上线" />
+  - `关闭剪贴板图片记录` <Badge type="tip" text="已上线" />
   - `插件使用统计` <Badge type="tip" text="已上线" />
   - **...**
 - **uTools会员**
