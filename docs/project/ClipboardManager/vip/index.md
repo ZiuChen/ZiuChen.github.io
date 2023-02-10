@@ -12,7 +12,7 @@
   - `WebDav数据多端同步` <Badge type="tip" text="已上线" />
   - `支持保存2000条历史记录` <Badge type="tip" text="已上线" />
   - `不限制历史记录过期时间` <Badge type="tip" text="已上线" />
-  - `文本内容增强, 按住Ctrl/Command点击链接 可以直接跳转` <Badge type="tip" text="已上线" />
+  - `文本内容增强, 按住Ctrl/Command点击文本/链接 可以直接预览/跳转` <Badge type="tip" text="已上线" />
   - `图片预览增强, 按住Ctrl/Command点击图片 可以直接预览` <Badge type="tip" text="已上线" />
   - `文件预览增强, 按住Ctrl/Command点击文件 可以打开其所在文件夹` <Badge type="tip" text="已上线" />
   - `自定义分类排序` <Badge type="tip" text="已上线" />
