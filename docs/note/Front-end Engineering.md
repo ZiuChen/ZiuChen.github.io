@@ -257,6 +257,10 @@ console.log(name, age) // Ziu 18
 - 当通过`require`导入时：`const env = require('env.js')`
   - `env`这个变量等于`env.js`中的`exports`对象
   - 本质上是`env`是`exports`对象的引用赋值
+  - `{ id: '...', exports: { ... }, loaded: true, ... }`
+- 后续即使再次执行`require`导入模块，模块中的代码也不会重新执行（`module.loaded`属性）
+  - 当从模块中取值时，会从已经加载的`exports`对象缓存上取值
+
 
 ::: code-group
 
@@ -402,3 +406,422 @@ console.log(utils.age) // undefined
   - CommonJS会被WebPack解析
   - 将CommonJS代码转化为bundle 浏览器可以直接运行
 
+### ESModule
+
+- ES6 模块采用**编译时加载**，使得**编译时就能确定模块的依赖关系**，有助于**静态优化**
+- CommonJS模块在运行时加载，且必须借助对象加载模块内容
+
+#### `export`和`import`用法概览
+
+ESModule借助`export`和`import`导入导出内容，需要注意的是导入导出的并不是对象
+
+`export`定义的是当前模块导出的**接口**，`import`可以导入来自其他不同模块的**接口**
+
+- `export default`可以设置默认导出对象
+- `export { ... }`可以统一导出多个内容
+- `export`和`import`都可以使用`as`关键字重命名导出/导入的接口
+- `import * from 'xxx'` `export * from 'xxx'`批量导入/导出
+
+::: code-group
+
+```js [utils.js]
+// utils.js
+export function sum(a, b) {
+  return a + b
+}
+export function sub(a, b) {
+  return a - b
+}
+export default function log(...args) {
+  console.log(...args)
+}
+export {
+  name: 'Ziu',
+  age: 18
+}
+export const ENV_VARIABLE = 'Hello, World!'
+```
+
+```js [index.js]
+// index.js
+import { sum, sub, name, age, ENV_VARIABLE } from './utils'
+import log from './utils.js'
+
+sum(1, 2) // 3
+sub(2, 3) // -1
+log(name, age, ENV_VARIABLE) // 'Ziu' 18 'Hello, World!'
+```
+
+:::
+
+需要注意的是，在浏览器中要使用ESModule，需要为`<script>`标签添加`module`标记：
+
+`<script src="index.js" type="module"></script>`
+
+- 当浏览器解析到`type="module"`的JS代码后，会**分析模块中导入的ESModule模块**
+- 每导入一个ESModule模块，**浏览器都会发起一个HTTP请求去加载它**
+- 在本地运行时加载不同协议头的文件会遇到跨域问题，需要开启本地Web服务器
+
+另外，**`export`与`import`必须位于模块的顶层**，如果位于作用域内会报错，因为这就**无法对代码进行静态分析优化了**
+
+#### `export`详解
+
+`export`有两种导出方式：
+
+- 命名导出 `export const name = 'Ziu'` `export { v1, v2 } export * from 'xxx'`
+  - 导出时需要指定名字
+  - 导入时也需要知道对应的名字
+- 默认导出 `export default AGE = 18`
+  - 在从其他位置导入时需要为此默认导出指定新的名字
+  - 给用户方便：不必阅读文档就可以加载模块
+
+#### 值的动态绑定
+
+- ESModule模块通过`export`语句输出的接口，与其对应的值是**动态绑定关系**，即通**过该接口，可以取到模块内部实时的值**
+- CommonJS模块输出的是值的缓存，不存在动态更新
+
+我们援引之前介绍CJS时的案例，**将后缀名改为`mjs`即可在Node中运行ESModule模块代码**
+
+初始获得的`a`值为0，经过1s后，在`utils.mjs`中修改了a的值，这时导入`utils.mjs`模块的其他模块可以获取到`a`最新的值
+
+::: code-group
+
+```js [utils.mjs]
+// utils.mjs
+export let a = 0
+
+// 1s后修改a值
+setTimeout(() => {
+  a = 1
+}, 1000)
+```
+
+```js [index.mjs]
+// index.mjs
+import { a } from './utils.mjs'
+
+console.log(a) // 0
+
+setTimeout(() => {
+  console.log(a) // 1
+}, 1500)
+```
+
+:::
+
+- 需要注意的是，导入的其他模块的变量是不允许被修改的，因为`index.mjs`导入的本质是一个接口
+- 如果从其他模块导入的是一个对象，也不推荐修改导入内容的任何值，最好将其当做完全只读
+
+拓展阅读：CommonJS与ESModule加载模块的异同
+
+#### `import`详解
+
+检查下述代码：
+
+```js
+foo()
+
+import { foo } from 'foo'
+```
+
+- `import`命令具有提升效果，会提升到整个模块的顶部
+- `import`的执行早于函数的调用，`import`命令是在编译阶段执行的，在代码运行之前
+- 由于`import`是静态执行，所以不能使用表达式和变量（只有运行时才有值）
+
+```js
+import 'lodash'
+import 'lodash'
+```
+
+- 如果仅仅导入了一个模块，那么该模块的代码会被执行，但是没有任何变量被导入
+- 如果同一模块被导入多次，那么导入操作只会被执行一次
+
+```js
+import * from 'utils'
+add(1, 2)
+
+export * from 'utils'
+```
+
+- 可以通过`*`一次性导入模块中所有导出的变量、函数、类
+- 也可以实现二者的复合操作：导入全部模块的同时导出全部模块
+
+#### `import()`函数
+
+通过`import`命令导入的模块是静态的，会被提升到模块顶部，并不支持条件导入
+
+ES2020引入了`import()`函数，可以通过`import()`函数实现条件导入，动态加载ESModule模块
+
+```js
+const main = document.querySelector('main');
+
+import(`./section-modules/${someVariable}.js`)
+  .then(module => {
+    module.loadPageInto(main);
+  })
+    .catch(err => {
+    main.textContent = err.message;
+  })
+```
+
+- 返回值是一个Promise对象，可以通过`await`同步地操作它
+- `import()`函数可以在模块外的JS脚本中使用，用于**在运行时加载外部模块**，类似于`require()`
+- 区别于`require()`，`import()`是异步加载模块
+
+通过`.then`函数处理导入的模块时，行为和`import`是相同的：
+
+- 如果有默认导出对象，则`.then`入参为默认导出对象
+- 可以通过解构直接取到模块中导出的变量或函数：`.then(({ add, sub }) => { ... })`
+
+**应用场景**
+
+按需加载：按钮点击后才加载相关的JS文件
+
+```js
+btn.addEventListener('click', () => {
+  import('./dialogBox.js')
+    .then(dialogBox => {
+      dialogBox.open()
+    })
+    .catch(err => console.log(err))
+})
+```
+
+条件加载：根据主题色加载不同JS文件
+
+```js
+if(darkMode) {
+  import('dark.js').then(() => ...)
+} else {
+  import('light.js').then(() => ...)
+}
+```
+
+传入动态值
+
+```js
+let moduleName = () => ['Home', 'History', 'User'][0]
+import(`./${moduleName()}.js`)
+```
+
+#### `import.meta`
+
+ES2020引入了`import.meta`，它仅能在模块内部使用，包含一些模块自身的信息，即模块元信息
+
+- `import.meta.url` 返回当前模块的URL路径
+  - 浏览器加载ESModule都是通过HTTP发起请求
+    - 例如当前模块为`fetchData.js`，要在模块内引入一个名为`data.json`的数据：
+    - `import( new URL('data.json', import.meta.url) )`
+  - Node.js环境下，该值都是`file://`协议的链接
+- `import.meta.scriptElement`
+  - 浏览器特有的属性
+  - 返回加载模块的`<script>`标签，相当于`document.currentScript`
+
+规范中并未规定`import.meta`中包含哪些属性，一般包括上面两个属性
+
+### 深入理解模块加载
+
+#### ESModule的解析过程
+
+ESModule的解析过程可以分为三个阶段：
+
+- 构建 `Construction`
+  - 根据地址查找JS文件，并发起HTTP请求下载，将其解析为模块记录 `Module Record`
+- 实例化 `Instatiation`
+  - 对模块记录进行实例化，并为其分配内存空间
+  - 解析ESModule模块的**导入和导出**语句，将模块指向对应的内存地址
+  - 例如`export const name = 'Ziu'`，会将变量`name`添加到模块环境记录中 `Module Enviroment Record`
+- 运行 `Evaluation`
+  - 运行代码，计算值，并且将值填充到内存地址中
+  - 将导入导出的**值**赋给对应的变量`name = 'Ziu'`
+
+![ESModule解析过程](https://hacks.mozilla.org/files/2018/03/07_3_phases.png)
+
+文章推荐：[ES modules: A cartoon deep-dive](https://hacks.mozilla.org/2018/03/es-modules-a-cartoon-deep-dive/)
+
+#### MJS和CJS的区别
+
+- **CommonJS模块输出的是值的拷贝，而ESModule模块输出的是值的引用**
+  - CJS导出的变量，其值如果在模块内发生变化，外部导入是不会同步更新的，除非导出的是一个取值函数
+  - MJS导出变量，外部模块每次访问时都会得到该变量最新的值，即使变量在模块内被修改了
+- **CommonJS模块是运行时加载，而ESModule是编译时输出接口**
+  - CJS是**通过对象实现**的导入导出，它**在运行时才被确定依赖关系**和其值
+  - MJS则是**通过静态定义**，在代码运行之前的**静态解析阶段即可确定模块的导入导出内容**
+- **CommonJS模块的`require()`是同步加载模块，而ESModule模块的`import`命令是异步加载模块**
+  - `import`命令拥有一个独立的模块依赖的解析阶段
+
+#### CJS中的循环加载
+
+设想有以下两文件 `a.js`与`b.js`：
+
+::: code-group
+
+```js [a.js]
+// a.js
+exports.done = false
+const b = require('./b.js')
+console.log('在 a.js 之中，b.done = %j', b.done)
+exports.done = true
+console.log('a.js 执行完毕')
+```
+
+```js [b.js]
+// b.js
+exports.done = false
+const a = require('./a.js')
+console.log('在 b.js 之中，a.done = %j', a.done)
+exports.done = true
+console.log('b.js 执行完毕')
+```
+
+```js [main.js]
+// main.js
+const a = require('./a')
+const b = require('./b')
+console.log('在 main.js 之中, a.done=%j, b.done=%j', a.done, b.done)
+```
+
+:::
+
+执行脚本`main.js`，先执行`a.js`：
+
+- 第一行 导出`done`值为`false`
+- 第二行 `a.js`的代码暂停执行 进入`b.js`并等待其执行完毕
+
+在`b.js`中：
+
+- 第一行 导出`done`值为`false`
+- 第二行 执行`a.js` 从`a.js`模块中取`exports`对象
+- **取到其缓存值为`false`（`a.js`执行已经执行的部分）**
+- 随后`b.js`继续向下执行 执行完毕后 将执行权交还给`a.js`
+
+回到`a.js`中：
+
+- 继续向后执行 直到代码执行完毕
+
+最终输出：
+
+```sh
+在 b.js 之中，a.done = false
+b.js 执行完毕
+在 a.js 之中，b.done = true
+a.js 执行完毕
+在 main.js 之中, a.done=true, b.done=true
+```
+
+总结：
+
+- CJS的模块导出是输出值的拷贝，而不是引用，值的变化不是动态的，而是会被缓存的
+- 循环加载时，CJS模块导出的值是当前已经执行部分代码产生的结果的值，而不是模块代码完全执行完后的最终值
+
+#### MJS中的循环加载
+
+ESModule的导入和导出与CommonJS有本质不同：
+
+::: code-group
+
+```js [a.mjs]
+// a.mjs
+import { bar } from './b.mjs'
+console.log('a.mjs')
+console.log(bar)
+export let foo = 'foo'
+```
+
+```js [b.mjs]
+// b.mjs
+import { foo } from './a.mjs'
+console.log('b.mjs')
+console.log(foo)
+export let bar = 'bar'
+```
+
+:::
+
+执行`a.mjs`后发现报错了：`ReferenceError: Cannot access 'foo' before initialization`，变量`foo`未定义
+
+- MJS模块在代码执行前会进行静态分析
+- 分析`a.mjs`的依赖关系时，发现其依赖了`b.mjs`
+- 于是加载`b.mjs`并解析它的依赖关系
+- 解析`b.mjs`的过程中，发现它又依赖了`a.mjs`
+- 这时引擎不会再去加载`a.mjs` 而是认为`a.mjs`这个模块的`Module Record`已经存在了
+- 继续向下执行，执行到`console.log(foo)`时发现`foo`未定义 抛出错误
+
+要实现预期效果，可以将`foo`与`bar`改写为取值函数，这时执行就不会报错了：
+
+::: code-group
+
+```js [a.mjs]
+// a.mjs
+import { bar } from './b.mjs'
+console.log('a.mjs')
+console.log(bar())
+export function foo() {
+  return 'foo'
+}
+```
+
+```js [b.mjs]
+// b.mjs
+import { foo } from './a.mjs'
+console.log('b.mjs')
+console.log(foo())
+export function bar() {
+  return 'bar'
+}
+```
+
+:::
+
+这是因为函数`function`具有提升作用，在`a.mjs`中执行`import { bar } from './b.mjs'`之前，`foo`就有定义了。
+
+因此在进入`b.mjs`执行`console.log(foo())`时可以取到`foo`，代码可以顺利执行
+
+另：如果将`foo`定义为函数表达式`export const foo = () => 'foo'`，由于没有变量提升，代码仍然会报错
+
+#### 内部变量差异
+
+ESModule和CommonJS另一个重要区别就是：
+
+ESModule模块是在浏览器与服务端通用的，之前在解读CommonJS时介绍了它拥有的一些内部变量（模块变量）：
+
+- `arguments`
+- `require`
+- `module`
+- `exports`
+- `__filename`
+- `_dirname`
+
+这些变量在ESModule模块中都是不存在的，且顶层的`this`不再指向当前模块，而是`undefined`
+
+### 拓展内容
+
+#### 在Node.js中使用ESModule
+
+在Node.js中，普通的`.js`文件会被默认解析为CommonJS，要使用ESModule有两种方式：
+
+- 所有ESModule的后缀名都使用`.mjs`并且不可省略
+  - 这样引擎在解析到`.mjs`结尾的文件时，将按照ESModule的规则解析其导入导出关系
+- 将`package.json`中的`type`字段修改为`module`
+  - 此时项目中所有`.js`文件都将被作为ESModule模块解析
+  - 要在此项目中使用CommonJS，则需要将后缀名修改为`.cjs`
+
+#### 解读`package.json`中的字段
+
+- `main`字段
+
+  - 指定一个npm包的`main`字段为一个JS模块
+  - 当我们从其他位置通过`import { something } from 'es-module-package'`导入时
+  - Node.js将从`main`字段指定的模块查找导出内容
+
+- `exports`字段
+
+  - `exports`字段优先级高于`main`字段，它具有多种用法：
+  - 子目录别名
+    - 假设如是定义`exports`字段：`exports: { "./submodule": "./src/submodule.js" }`
+    - 当执行`import submodule from 'es-module-package/submodule'`时，会按照以下路径查找模块：
+    - `./node_modules/es-module-package/src/submodule.js`
+  - `main`的别名
+  - 条件加载
+
+参考：[package.json 的 exports 字段](https://es6.ruanyifeng.com/#docs/module-loader#package-json-%E7%9A%84-exports-%E5%AD%97%E6%AE%B5)
