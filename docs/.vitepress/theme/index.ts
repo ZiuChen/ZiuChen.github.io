@@ -19,7 +19,6 @@ export default {
     const { app } = ctx
     app.component('Title', Title)
     app.component('ImgSlider', ImgSlider)
-    console.log(app)
   },
   setup() {
     const router = useRouter()
