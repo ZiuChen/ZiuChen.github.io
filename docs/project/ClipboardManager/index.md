@@ -5,6 +5,13 @@ navbar: false
 
 <script setup>
   import url from './assets/logo.png'
+  import img1 from './assets/11.png'
+  import img2 from './assets/22.png'
+  import img3 from './assets/33.png'
+  import img4 from './assets/44.png'
+  import img5 from './assets/55.png'
+  import img6 from './assets/66.png'
+  import img7 from './assets/77.png'
   const titleInfo = {
     subTitle: '✨ 强大的剪贴板管理工具。',
     logo: url,
@@ -17,13 +24,13 @@ navbar: false
     ]
   }
   const imgSliders = [
-    { src: './assets/11.png' },
-    { src: './assets/22.png' },
-    { src: './assets/33.png' },
-    { src: './assets/44.png' },
-    { src: './assets/55.png' },
-    { src: './assets/66.png' },
-    { src: './assets/77.png' },
+    { src: img1 },
+    { src: img2 },
+    { src: img3 },
+    { src: img4 },
+    { src: img5 },
+    { src: img6 },
+    { src: img7 },
   ]
 </script>
 
