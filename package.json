@@ -10,6 +10,7 @@
     "vue": "^3.2.45"
   },
   "dependencies": {
-    "medium-zoom": "^1.0.8"
+    "medium-zoom": "^1.0.8",
+    "vue3-carousel": "^0.2.9"
   }
 }

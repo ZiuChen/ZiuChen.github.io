@@ -10,6 +10,7 @@
 
 <script setup lang="ts">
 import { PropType } from 'vue'
+import type { LinkList } from '../types'
 import Link from './Link.vue'
 
 const props = defineProps({
