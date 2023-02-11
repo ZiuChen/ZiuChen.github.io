@@ -16,6 +16,15 @@ navbar: false
       { content: '🚚 更新日志', target: './log/' },
     ]
   }
+  const imgSliders = [
+    { src: './assets/11.png' },
+    { src: './assets/22.png' },
+    { src: './assets/33.png' },
+    { src: './assets/44.png' },
+    { src: './assets/55.png' },
+    { src: './assets/66.png' },
+    { src: './assets/77.png' },
+  ]
 </script>
 
 <Title v-bind="titleInfo" />
@@ -37,10 +46,9 @@ navbar: false
 - ✅ 优雅的界面动效与交互 跟随系统的深色模式
 - ✅ 优秀的剪贴板监听性能 强大的自定义功能按钮 自搭建多端同步 ···
 
---------
+<ImgSlider :imgSliderList="imgSliders" />
 
-![](./assets/hero-1.png)
-![](./assets/hero-2.png)
+--------
 
 ## 📚 安装方式
 

@@ -3,10 +3,3 @@ declare module '*.vue' {
   const componentOptions: ComponentOptions
   export default componentOptions
 }
-
-interface LinkItem {
-  content: string
-  target: string
-}
-
-type LinkList = LinkItem[]
