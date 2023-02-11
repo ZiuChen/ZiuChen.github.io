@@ -38,11 +38,19 @@
 
 ## WebDav同步功能
 
+:::warning
+如果剪贴板数据体积过大，可能出现同步时间过长、同步失败等问题
+
+建议及时删除保存在超级剪贴板内的图片，或**关闭记录图片到剪贴板**
+:::
+
 插件会员支持通过WebDav同步剪贴板数据
 
 获取`服务器地址 账号 密钥`后，仅需在**插件内的设置页面**添加WebDav配置后，
 
 每次本地数据库发生变化，都会将最新数据同步到同步到服务器（须开启插件内的自动同步 否则需要手动同步）
+
+![WebDav](../assets/vip-webdav.png)
 
 - 如果配置了WebDav 则每天第一次进入插件时会自动从服务器拉取最新数据
 - 如果设置了自动同步 每次本地数据变化将自动同步本地数据到服务器
@@ -53,13 +61,25 @@
 - 插件仅在每次启动时主动从云端拉取数据 云端数据的更新不会自动同步到本地
 - 可以通过点击工具栏按钮主动拉取云端数据到本地或上传数据到云端
 
-![WebDav](../assets/vip-webdav.jpg)
-
 相关链接：
 
 - [Teracloud](https://teracloud.jp/en/) （国内可用 无限制）
 - [坚果云 WebDav](https://help.jianguoyun.com/?tag=webdav)（国内可用 限制调用次数）
 - [2022年还有哪些支持WebDAV的网盘？](https://www.zhihu.com/question/347182171)
+
+## 代码高亮功能
+
+插件使用Shiki作为代码高亮库，为了压缩插件体积、提高代码执行效率，其相关依赖都将从CDN动态加载
+
+支持在设置页修改代码高亮的主题、可选语言、CDN地址，**设置的首个语言为展开预览后的默认语言**
+
+![HighLight](../assets/vip-highlight.png)
+
+- 默认CDN地址: `https://unpkg.com/shiki@0.14.1/`
+- 默认主题: `one-dark-pro`
+- 默认语言: `javascript` `css` `html` `json` `markdown` `php` `python` `ruby` `shellscript` `sql` `java` `c` `cpp` `csharp` `go`
+
+更多可用主题/语言，见Github仓库：[Shiki](https://github.com/shikijs/shiki)
 
 ## 更多内容
 
