@@ -635,7 +635,7 @@ ESModule的解析过程可以分为三个阶段：
   - 运行代码，计算值，并且将值填充到内存地址中
   - 将导入导出的**值**赋给对应的变量`name = 'Ziu'`
 
-![ESModule解析过程](https://hacks.mozilla.org/files/2018/03/07_3_phases.png)
+![ESModule解析过程](Front-end Engineering.assets/esmodule-phases.png)
 
 文章推荐：[ES modules: A cartoon deep-dive](https://hacks.mozilla.org/2018/03/es-modules-a-cartoon-deep-dive/)
 
@@ -808,8 +808,37 @@ ESModule模块是在浏览器与服务端通用的，之前在解读CommonJS时�
 
 #### 解读`package.json`中的字段
 
-- `main`字段
+- 
 
+
+## 包管理工具
+
+- npm包管理工具
+- package配置文件
+- npm install原理
+- yarn cnpm npx
+- 发布自己的npm包
+- pnpm使用和原理
+
+### npm
+
+- Node Package Manager 包管理工具，方便管理项目依赖、管理代码版本、分发代码
+- 目前不仅管理Node的包了，前端项目的依赖包都可以由它管理
+- 安装Node.js会自动为我们安装npm
+
+全局安装、局部安装、开发依赖、生产依赖
+
+### package.json
+
+`package.json`用来记录项目的配置信息，包括项目名、版本、项目入口、脚本、依赖项
+
+通过`npm init -y`初始化项目，会为我们生成一个`package.json`文件
+
+强烈建议阅读官方文档对`package.json`的解读：[package.json](https://docs.npmjs.com/cli/v9/configuring-npm/package-json)
+
+#### `main`与`exports`字段
+
+- `main`字段
   - 指定一个npm包的`main`字段为一个JS模块
   - 当我们从其他位置通过`import { something } from 'es-module-package'`导入时
   - Node.js将从`main`字段指定的模块查找导出内容
@@ -825,3 +854,240 @@ ESModule模块是在浏览器与服务端通用的，之前在解读CommonJS时�
   - 条件加载
 
 参考：[package.json 的 exports 字段](https://es6.ruanyifeng.com/#docs/module-loader#package-json-%E7%9A%84-exports-%E5%AD%97%E6%AE%B5)
+
+#### `dependencies`和`devDependencies`的区别
+
+- `dependencies`应当包含依赖的最小集，在此之上添加的文档、测试、调试、构建等的依赖，都应当被放进`devDependencies`
+- 当别人安装你发布的npm包时，执行`npm install xxx`后，只会安装包本身以及其中的`dependencies`运行时依赖
+- 如果使用打包工具如Webpack，不论依赖放在哪一个里面，只要项目中有引入就会被打包进生产，除非配置了`external`
+
+官方对两个字段的定义：
+
+> dependencies: Dependencies are specified in a simple object that maps a package name to a version range. The version range is a string which has one or more space-separated descriptors. Dependencies can also be identified with a tarball or git URL.
+
+> devDependencies: If someone is planning on downloading and using your module in their program, then they probably don't want or need to download and build the external test or documentation framework that you use.
+
+**总结：将与代码运行时无关的依赖放入`devDependencies`，可以让他人在使用你开发的库时，少安装一些不必要的依赖。**
+
+#### 依赖版本号中的`~1.2.0`和`^1.2.0`有什么区别
+
+版本号简要说明：`[major 主要版本].[minor 次要版本].[patch 补丁版本]-[alpha | beta 测试阶段].[测试版本号]`
+
+- `~` Allows patch-level changes if a minor version is specified on the comparator. Allows minor-level changes if not.
+  -  如果指定了次要版本，则允许补丁级别的更改，否则允许进行较小级别的更改
+  - 如`~1.2.0`：允许安装`1.2.0 - 1.3.0`的版本
+  - 如`~1.2`：允许安装`1.2.0 - 1.3.0`的版本
+  - 如`~1`：允许安装`1.x`的版本，不允许上升到`2.0.0`
+
+- `^` Allows changes that do not modify the left-most non-zero element in the `[major, minor, patch]` tuple.
+- 允许对`1.0.0`及更高版本进行补丁和次要更新，对版本`0.x >=0.1.0`进行补丁更新，对版本`0.0.x`不进行更新。
+  - 如`^1.2.3`：允许安装`1.2.3 - 2.0.0`的版本
+  - 如`^0.2.3`：允许安装`0.2.3 - 0.3.0`的版本
+  - 如`^0.0.3`：允许安装`0.0.3 - 0.0.4`的版本
+
+
+参考：[node-semver](https://github.com/npm/node-semver#versions)
+
+Allows patch-level changes if a minor version is specified on the comparator. Allows minor-level changes if not.
+
+devDependenciesAllows changes that do not modify the left-most non-zero element in the [major, minor, patch] tuple.
+
+允许对版本 1.0.0 及更高版本进行补丁和次要更新，对版本 0.X >=0.1.0 进行补丁更新，对版本 0.0.X 不进行更新。
+
+### npx
+
+`npx`命令用来在项目路径下执行`node_modules/.bin`下的命令，默认这些命令都位于`node_modules/.bin`中，如果不cd进去shell找不到它们，在项目根目录调用它们自然会报未知命令的错误。
+
+以webpack为例：
+
+- 直接在控制台输入`webpack`会报错：未知命令
+- 必须通过`npx webpack`来替我们调用
+  - 这相当于在控制台执行了`./node_modules/.bin/webpack`
+- 通过在`package.json`中定义`script`
+  - 执行`npm run xxx`后，会为我们将`.bin`中的命令添加进系统的PATH中
+  - 这样就相当于直接在项目根目录下直接调用`.bin`中的命令了
+- 如果全局安装了webpack那么在系统任意路径下都可以用`webpack`命令了
+
+#### 解读`package.json`中的`bin`字段
+
+`.bin`目录下的可执行文件从何处来？由npm官方文档中对`package.json/bin`字段的介绍可以知道：
+
+> A lot of packages have one or more executable files that they'd like to install into the PATH. npm makes this pretty easy (in fact, it uses this feature to install the "npm" executable.)
+>
+> To use this, supply a `bin` field in your package.json which is a map of command name to local file name. When this package is installed globally, that file will be either linked inside the global bins directory or a cmd (Windows Command File) will be created which executes the specified file in the `bin` field, so it is available to run by `name` or `name.cmd` (on Windows PowerShell). When this package is installed as a dependency in another package, the file will be linked where it will be available to that package either directly by `npm exec` or by name in other scripts when invoking them via `npm run-script`.
+
+如果第三方包在`package.json`中声明了`bin`字段：`命令名称 -> 本地文件名`的映射，如`bin: { "webpack": "bin/webpack.js" }`
+
+在执行安装`npm i xxx`时，会由包管理工具创建`.bin`目录，并创建一个可执行命令并将其**软链接**到目标文件
+
+推荐阅读：[三面面试官：运行 npm run xxx 的时候发生了什么？](https://juejin.cn/post/7078924628525056007)
+
+### npm包的发布
+
+如果你希望发布自己的npm包，主要涉及到的命令有：
+
+```sh
+npm init -y # 初始化项目 生成package.json
+npm login # 登录自己的npm账号
+npm publish # 将包发布到npm上 后续版本更新也使用此命令
+npm unpublish # 取消发布 删除发布的npm包
+npm deprecate # 让发布的npm包过期
+```
+
+执行`npm init -y`后，为我们生成的默认`package.json`如下：
+
+```json
+{
+  "name": "my-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
+```
+
+其中`keywords` `author` `license`都会展示在此包的npm网站上，除此之外还可以定义`homepage` `repository`字段
+
+### npm包的开发调试
+
+在npm包的开发过程中，如果要调试代码，那我们不可能每次修改代码都通过*提交到npm后，重新下载到本地*来调试代码
+
+一般来讲有三种解决方案：
+
+- 直接修改导入路径 简单粗暴
+  - 如：将之前的`import lodash from 'lodash-es'`修改为`import lodash from '... debug/lodash-es'`
+  - 也可以修改`package.json`中的依赖版本为`file:包的路径`
+  - 纯人工操作，容易误操作，不推荐
+- 通过`npm link`命令 软连接
+  - 首先在本地**开发中的包项目**根目录执行`npm link`，将提示：`success Registered "my-project".`成功注册名为`my-project`的包
+  - 随后，在**引入了此包的项目**根目录下执行`npm link "my-project"` 即可将当前项目的`node_modules`中的此包软连接到正在开发中的包的路径
+  - 在许多情况下可能有效，但它通常会带来严重的限制和依赖关系解决、文件系统之间的符号链接互操作性等问题
+- yalc模拟发布npm包
+  - yalc可以将模拟发布的npm包存放在全局存储中，这样可以得到类似于发布-安装的效果
+  - 可以避免`npm link`导致的依赖关系问题
+    - 全局安装`npm i yalc -g` 模拟发布`yalc publish`
+    - 引入方法1 `yalc link my-project`：向`node_modules`创建指向包内容的**符号链接**，并且不会修改`package.json`中的内容
+    - 引入方法2 `yalc add my-project`：将包拉到当前项目根目录`.yalc`中，并将 `file:.yalc/my-project` 依赖关系注入到`package.json`中（`file:包的路径`）
+
+### PNPM
+
+#### 解决了哪些痛点
+
+传统包管理工具如npm yarn都有以下两个痛点：
+
+- `node_modules`太重 硬盘压力较大
+- 幽灵依赖（为了复用 所有的包都被铺平在`node_modules`中 导致即使某些间接依赖虽然没有被安装 却能正常引入）
+
+PNPM（performant npm）有以下优点：
+
+- 比其他包管理器更快
+- `node_modules`中的文件链接自特定的内容寻址存储库
+- 支持 monorepos（单仓多包）
+- PNPM创建了一个非平铺的`node_modules` 代码无法访问任意包（避免了幽灵依赖）
+
+#### 硬链接和软链接
+
+- 硬链接 （hard link）
+  - 电脑文件系统中的多个文件平等地共享同一个文件存储单元
+  - 删除一个文件名字后，还可以通过其他名字继续访问该文件
+- 符号链接 （软链接 soft link、Symbolic link）
+  - 符号链接 是一类特殊的文件
+  - 其包含有一条以绝对路径或者相对路径的形式**指向其他文件或者目录的引用**
+
+![hard-link and soft-link](Front-end Engineering.assets/hard-link-and-soft-link.jpg)
+
+操作系统使用不同的**文件系统**，**对真实的硬盘读写操作做了一层抽象**，借由文件系统，我们得以方便地操作和访问文件的真实数据
+
+- 软链接例：你为一个文件创建了一个快捷方式，这个快捷方式本质上保存着目标文件的路径
+  - 访问快捷方式的本质是通过路径访问原文件
+  - 删除快捷方式时，不会对原文件的数据产生影响
+- 硬链接例：`F:/Video/abc.mp4` 和 `F:/Video/cba.mp4`指向了同一片硬盘数据空间
+  - 在文件系统中删除`abc.mp4`或`cba.mp4`之一，并**不会影响到其他文件对该片数据空间的读取**
+  - 注意：硬链接不是拷贝，文件拷贝意味着**有新的数据空间在硬盘上被开辟**，拷贝出的文件和原文件指向不同的数据空间
+
+#### 实操硬链接和软链接
+
+- 文件的拷贝
+  - Windows: `copy foo.js foo_copy.js`
+  - MacOS: `cp foo.js foo_copy.js`
+- 文件的硬链接
+  - Windows: `mklink /H aaa_hard.js aaa.js`
+  - MacOS: `ln foo.js foo_hard.js`
+- 文件的软链接
+  - Windows: `mklink aaa_soft.js aaa.js`
+  - MacOS: `ln -s foo.js foo_copy.js`
+
+打开符号链接文件，会直接跳转到原文件，且符号链接文件不可写
+
+#### PNPM的工作细节
+
+##### 硬链接
+
+- 当使用npm或yarn时，如果有100个项目，且每个项目都有一个相同的依赖包
+  - 此依赖包将会在你的硬盘上存储100份，占据100份硬盘数据空间
+- 当使用pnpm时，此依赖包将被存储在一个统一的位置
+  - 所有其他项目引用该版本的依赖，将使用这同一份文件
+  - 如果依赖有不同版本，则不同版本的依赖包分别存储
+
+这样，多个项目之间可以方便地共享相同版本的依赖包，减小了硬盘的压力。
+
+以安装`axios`为例，我们在某个项目中执行了`pnpm add axios`
+
+- PNPM拉取Axios的代码 将其保存在**全局仓库**`.pnpm/axios`中，并且**硬链接**到硬盘中的数据文件
+- 在**当前项目**中的`node_modules`创建文件夹`axios`，将其中的文件**硬链接**到硬盘中的相同位置
+- 硬链接是不能操作目录的 目录需要创建 而其中的文件可以使用硬链接
+- 以后如果有其他项目也用到了相同版本的`axios`，在执行`pnpm add axios`后：只需要在各自的`node_modules`创建硬链接到那片数据空间即可
+
+##### 非扁平的node_modules
+
+- 使用npm或yarn Classic安装依赖包时 所有包都将被提升到`node_modules`的根目录下
+  - 这是为了防止依赖之间多层嵌套，才想出的解决方案
+  - 这就导致：源码可以访问到间接依赖，访问到本不属于此项目的依赖包，导致幽灵依赖问题
+- 而PNPM仅有项目依赖会放在`node_modules`目录下
+  - 这些在`node_modules`根目录中的依赖包，是`node_modules/.pnpm`中硬链接文件的的**符号链接**
+  - 在`node_modules/.pnpm`中，包含了附加版本信息的真实文件（硬链接到硬盘数据的文件）
+  - 所有间接依赖，都通过软链接的方式，链接到被铺平在`.pnpm`文件夹中对应版本的硬链接文件上
+
+![how pnpm works](Front-end Engineering.assets/how-pnpm-works.jpg)
+
+#### 常用命令
+
+- `pnpm === npm init -y` 项目初始化
+- `pnpm install === npm i` 安装项目依赖
+- `pnpm add <pkg> === npm install <pkg>` 安装npm包
+- `pnpm remove <pkg> === npm uninstall <pkg>` 移除npm包
+- `pnpm <script> === npm run <script>` 执行项目脚本
+
+#### 存储Store的位置
+
+- 在PNPM 7.0之前，统一的存储位置是`~/.pnpm-store`
+  - 例如`C:/Users/Ziu/.pnpm-store`
+    - `~/path === $HOME/path` 用户目录
+    - `./path` 相对路径
+    - `/path` 根目录
+- 在7.0版本之后，统一存储位置在`<pnpm home directory>/store`
+  - Linux: `~/.local/share/pnpm/store`
+  - Windows: `%LOCALAPPDATA%/pnpm/store`
+  - MacOS: `~/Library/pnpm/store`
+
+可以通过命令行，获取到这个目录：
+
+```sh
+pnpm store path # 获取到硬链接store的路径
+```
+
+如果当前目录创建了很多项目，尽管PNPM已经节省了空间，但是由于所有依赖都通过硬链接存放在同一个store中
+
+随着文件数量增长，导致store越来越大，可以通过命令行，移除冗余文件造成的体积占用
+
+```sh
+pnpm store prune # prune修剪 从store中删除当前未被引用的包 以释放store的空间
+```
+
