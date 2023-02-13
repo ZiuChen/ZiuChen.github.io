@@ -38,10 +38,6 @@ export default defineConfig({
         ]
       },
       {
-        text: '文章创作',
-        link: '/article/一文读懂伪类与伪元素'
-      },
-      {
         text: '个人介绍',
         link: '/self/'
       }
@@ -64,7 +60,7 @@ export default defineConfig({
         ]
       },
       {
-        text: '文章创作',
+        text: '文章归档',
         collapsible: true,
         items: [...generateSideBar()]
       },
@@ -96,6 +92,11 @@ export default defineConfig({
       message: 'Released under the MIT License.',
       copyright: 'Copyright © 2019-present Ziu Chen'
     },
-    lastUpdatedText: 'Updated Date'
+    lastUpdatedText: 'Updated Date',
+    algolia: {
+      apiKey: 'b4fd296ea5e467b3ac4a582160ff3122',
+      indexName: 'ziuchenio',
+      appId: 'LFZ2CPWWUG'
+    }
   }
 })
