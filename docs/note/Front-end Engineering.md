@@ -1091,3 +1091,58 @@ pnpm store path # 获取到硬链接store的路径
 pnpm store prune # prune修剪 从store中删除当前未被引用的包 以释放store的空间
 ```
 
+## 系统学习Webpack
+
+- 认识webpack工具
+- webpack基本打包
+- webpack配置文件
+- 编写和打包CSS文件
+- 编写Less文件
+- PostCSS工具处理CSS
+
+ ### Node内置模块 path
+
+- path模块用于对路径和文件进行处理
+- 在不同系统上，文件路径的分隔符是不同的
+  - MacOS和Linux的分隔符是`/`
+  - Windows上的分隔符是`\` `\\` 目前也支持 `/`
+
+可以通过Node的path模块来抹平不同平台的差异
+
+常用API
+
+- `path.extname` 后缀名
+
+- `path.basename` 文件名
+
+- `path.dirname` 文件夹名
+
+- `path.join` 拼接多个路径
+  - 下例中，由于`p2`通过`../`指定了上一级路径，所以从`abc`紧接着就是`why`了
+
+
+```js
+const path = require('path')
+const p1 = 'abc/cba'
+const p2 = '../why/kobe/james.txt'
+console.log(path.join(p1, p2)) // \\abc\\why\\kobe\\james.txt
+```
+
+- `path.resolve` 将多个路径片段解析、拼接为一个绝对路径
+  - **从右往左**处理传入的路径序列，每个路径依次被解析，直到构造完成一个绝对路径
+  - 如果在处理完所有给定path的段之后，还没有生成绝对路径，则使用当前工作目录
+  - 生成的路径被规范化并删除尾部斜杠，零长度path段被忽略
+  - 如果没有传递path段，则`path.resolve()`将返回当前工作目录的绝对路径
+
+### 初识Webpack
+
+path模块在webpack的使用中有较大作用，所以预先介绍了一下，下面正式进入Webpack的学习
+
+- Webpack能够帮助我们进行模块化开发
+- 高级特性提升开发效率和代码安全性、可维护性，如 ES6+ TypeScript SASS Less 等都需要构建工具
+- 实时文件监听（开发热更新）、代码压缩合并等
+
+
+
+
+
