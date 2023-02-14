@@ -29,7 +29,7 @@
 
 => 浏览器加载JS文件 => 绑定DOM事件 客户端渲染接管界面 => 再次跳转路由就是客户端渲染 无需请求后台
 
-## SPA的优点与缺点
+### SPA的优点与缺点
 
 - SPA的优点
   - 只需要加载一次 更好的用户体验
@@ -40,7 +40,7 @@
   - 首屏加载资源过大，影响首屏渲染速度
   - 不利于复杂项目构建
 
-## SEO优化
+### SEO优化
 
 - 语义性HTML标记
   - 标题用 `h1`，一个页面只应当由一个 `h1` 标签，副标题用 `h2 - h6`
@@ -109,14 +109,14 @@
   - 只能生成偏静态的页面，不利于与用户的交互，所有用户获取到的页面都是相同的
 - 哪些应用场景：文档站、个人博客、新闻站点等
 
-## SSR与SSG的优势
+### SSR与SSG的优势
 
 - 更短的首屏时间
   - 只需要请求一个HTML文件就能展示出页面
   - 虽然在服务端仍然需要调取相关接口，但是服务器-服务器之间的通信远比客户端快，有时甚至是同一台服务器的本地接口
   - 不再需要大量的js文件请求，这就使得SSR/SSG可以拥有更短的首屏时间
 
-## 跨请求状态污染
+### 跨请求状态污染
 
 - 在SPA中，整个生命周期只有一个App对象实例/一个Router对象实例/一个Store对象实例
 
@@ -136,4 +136,65 @@
 
   - 在每个请求中，为整个应用创建一个**全新的实例**，包括后面的Router和Store等实例
   - 带来的缺点就是：需要消耗更多的服务器资源
+
+## Nuxt3 系统学习
+
+- 邂逅Nuxt3
+- Nuxt3 初体验
+- Nuxt3 全局配置
+- Nuxt3 内置组件
+- Nuxt3 样式和资源
+- Nuxt3 页面和导航
+- Nuxt3 动态路由
+
+### 认识Nuxt3
+
+- 支持数据双向绑定和组件化：Vue.js
+- 处理客户端导航：Vue Router
+- 支持开发中热模块替换、生产环境代码打包：Webpack5 Vite
+- 兼容旧版浏览器，支持ES6+语法转译：ESBuild
+- 支持开发环境服务器，支持服务端渲染/API接口转发
+- 使用`h3`实现部署**可移植性**（`h3`是一个极小的高性能http框架）
+  - 如：支持在Serverless、Worker、Node.js环境中运行
+
+### 搭建Nuxt3环境
+
+使用命令行工具 `Nuxi` 初始化Nuxt：
+
+- `npx nuxi init project-name`
+- `pnpm dlx nuxi init project-name`
+- `npm install -g nuxi && nuxi init project-name`
+
+解读脚手架创建的初始化项目的`package.json`中的脚本：
+
+```json
+{
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "devDependencies": {
+    "nuxt": "^3.2.0"
+  }
+}
+```
+
+- `build` 构建正式版本，将被输出到`.output`文件夹
+- `dev` 开发环境
+- `generate` 打包正式版本项目，但是会预渲染每个路由（`nuxt build --prerender`）
+- `preview` 对打包项目启动本地预览服务器
+- `postinstall` 该脚本为NPM的生命周期函数，将在`npm install`后执行
+
+针对`postinstall`中执行的`nuxi prepare`脚本，官方文档有如下解释：
+
+> The `prepare` command creates a `.nuxt` directory in your application and generates types. This can be useful in a CI environment or as a `postinstall` command in your `package.json`.
+
+执行该脚本后，将在项目根目录创建`.nuxt`文件夹
+
+- 这个文件夹将作为默认构建输出的文件夹
+- 其中的文件都以`.d.ts`结尾，是Nuxt的TS类型声明
 
