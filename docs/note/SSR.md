@@ -198,3 +198,84 @@
 - 这个文件夹将作为默认构建输出的文件夹
 - 其中的文件都以`.d.ts`结尾，是Nuxt的TS类型声明
 
+### 配置 Configuration
+
+- 通过 `nuxt.config.ts` 文件，对Nuxt进行自定义配置
+- `runtimeConfig` 运行时配置 即定义**环境变量**
+  - 直接定义在 `runtimeConfig` 中的值，仅在服务端可以访问到
+    - 定义在``runtimeConfig.public``中的变量，在客户端和服务端中都能读取到
+    - 也可以将环境变量定义在`.env`文件中，优先级`.env > runtimeConfig`
+      - 以`NUXT_`开头的会作为私有环境变量读取到运行时
+      - 以``NUXT_PUBLIC_``开头的会作为公共变量读取到运行时
+  - `appConfig` 应用配置，定义在**构建时**确定的公共变量，如 theme
+    - 配置会和app.config.ts合并，优先级``app.config.ts > appConfig``
+  - `app` app的配置
+  - `head` 给每个页面设置head信息，也支持useHead配置和内置组件
+    - 在这个配置中定义的标签，会注入到所有页面的head标签中
+    - 也可以在某些页面动态插入head标签内容 使用``useHead``函数
+    - 或者在template中使用Nuxt的内置组件``Head``
+  - `ssr` 指定应用渲染模式
+    - 默认值为true 即采用SSR方式渲染应用
+    - 如果指定了``ssr: false`` 则会采用SPA的方式渲染应用，即客户端渲染
+  - `router` 配置路由相关的信息，比如在客户端渲染可以配置hash路由
+    - 需要注意的是：SSR并不支持哈希路由
+    - ``router: { options: { hashMode: false } }``
+  - `alias` 路径别名
+    - 默认已经为我们配置好了一些别名，详情可以参阅文档
+  - `modules` 配置Nuxt扩展的模块，比如``@pinia/nuxt`` ``@nuxt/image``
+  - `routeRules` 定义路由规则，可以更改路由的渲染模式或分配基于路由缓存策略
+  - `builder` 指定使用Vite还是Webpack来构建应用，默认是Vite，如切换为Webpack还需要安装额外依赖
+
+#### runtimeConfig 与 appConfig
+
+- `runtimeConfig`: 定义**环境变量**，比如：**运行时**需要指定的私有/公共的token等
+- `appConfig`: 定义**公共变量**，比如：**构建时**确定的公共token、网站配置等
+
+针对他们的比较，官方文档提供了一个表格可以参阅：
+
+| Feature                   | runtimeConfig | app.config |
+| ------------------------- | ------------- | ---------- |
+| Client Side               | Hydrated      | Bundled    |
+| Environment Variables     | ✅ Yes         | ❌ No       |
+| Reactive                  | ✅ Yes         | ✅ Yes      |
+| Types support             | ✅ Partial     | ✅ Yes      |
+| Configuration per Request | ❌ No          | ✅ Yes      |
+| Hot Module Replacement    | ❌ No          | ✅ Yes      |
+| Non primitive JS types    | ❌ No          | ✅ Yes      |
+
+[runtimeconfig-vs-appconfig](https://nuxt.com/docs/getting-started/configuration#runtimeconfig-vs-appconfig)
+
+#### 区分Client和Server环境
+
+Nuxt为我们扩展了Node的process对象，并为我们在浏览器环境提供了process对象：
+
+- Nuxt会在服务端的process对象中注入属性`dev` `server` `client`以供使用
+- 也会在浏览器网页中注入process对象，包含上述的三个属性
+- 也可以手动判断`typeof window === 'object'`检查是服务器环境/浏览器环境
+
+### 页面与组件 View and Component
+
+Nuxt会自动为我们：注册组件、注册页面路由，*约定>规范*
+
+- 位于`pages/`下的页面都会被注册路由
+  - 路由使用内置组件NuxtPage占位，相当于router-view
+  - 相对应的，可以使用NuxtLink执行跳转，相当于router-link
+  - 因为底层是vue-router，所以动态路由、嵌套路由都是支持的
+- 位于`components/`下的组件都会被自动全局注册
+
+#### Nuxt3 内置组件
+
+Nuxt3 框架提供了一些内置的组件，常用的如下：
+
+- SEO组件：Html Body Head Title Meta Style Link NoScript Base
+  - 这些组件的作用是，向页面中不同部分插入标签，在SSR的过程中渲染出来并返回给客户端
+  - 这样爬虫就会在同步获取页面数据时获取到这些标签
+- NuxtPage：是Nuxt自带的页面占位组件
+  - 需要显示位于目录中的顶级或嵌套页面`pages/`
+  - **是对 router-view 的封装**
+- ClientOnly：该组件包裹的内容只会在客户端渲染
+  - 其中内容不会出现在服务端返回的`.html`文件中
+  - 会在客户端通过JS脚本动态渲染出来
+    - 类似于Vue3新增的内置组件Suspence
+    - 可以为其传入具名插槽#fallback展示组件被渲染前的加载中状态
+- ServerOnly：该组件包裹的内容只会在服务端渲染

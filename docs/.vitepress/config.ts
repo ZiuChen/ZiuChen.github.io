@@ -34,7 +34,8 @@ export default defineConfig({
           { text: 'JavaScript基础', link: '/note/JavaScript' },
           { text: 'CSS基础', link: '/note/CSS' },
           { text: 'JavaScript进阶', link: '/note/JavaScriptEnhanced' },
-          { text: '前端工程化', link: '/note/Front-end Engineering' }
+          { text: '前端工程化', link: '/note/Front-end Engineering' },
+          { text: '服务端渲染', link: '/note/SSR' }
         ]
       },
       {
@@ -71,7 +72,8 @@ export default defineConfig({
           { text: 'JavaScript基础', link: '/note/JavaScript' },
           { text: 'CSS基础', link: '/note/CSS' },
           { text: 'JavaScript进阶', link: '/note/JavaScriptEnhanced' },
-          { text: '前端工程化', link: '/note/Front-end Engineering' }
+          { text: '前端工程化', link: '/note/Front-end Engineering' },
+          { text: '服务端渲染', link: '/note/SSR' }
         ]
       }
     ],
