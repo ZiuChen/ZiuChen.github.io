@@ -8,6 +8,9 @@ navbar: false
   const titleInfo = {
     subTitle: '✨ 强大的Markdown编辑器',
     logo: url,
+    linkList: [
+      { content: '🚀 快捷键一览', target: './shortcut/' },
+    ]
   }
 </script>
 
