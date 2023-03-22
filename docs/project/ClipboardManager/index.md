@@ -36,6 +36,10 @@ navbar: false
 
 <Title v-bind="titleInfo" />
 
+<br />
+
+<ImgSlider :imgSliderList="imgSliders" />
+
 ## 🔰 开始使用
 
 **首次安装需要设置“跟随主程序同时启动”**
@@ -52,10 +56,6 @@ navbar: false
 - ✅ **智慧分词** 快速拖选指定内容 **超级粘贴** 直接转存为文件
 - ✅ 优雅的界面动效与交互 跟随系统的深色模式
 - ✅ 优秀的剪贴板监听性能 强大的自定义功能按钮 自搭建多端同步 ···
-
-<ImgSlider :imgSliderList="imgSliders" />
-
---------
 
 ## 📚 安装方式
 
