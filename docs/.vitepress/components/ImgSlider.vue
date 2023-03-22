@@ -1,6 +1,6 @@
 <template>
   <div class="img-slider">
-    <Swiper :modules="modules" autoplay>
+    <Swiper :modules="modules" autoplay loop>
       <template v-for="{ src, alt } of imgSliderList" :key="src">
         <SwiperSlide>
           <img :src="src" :alt="alt" />
