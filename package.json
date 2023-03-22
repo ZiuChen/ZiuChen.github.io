@@ -11,6 +11,6 @@
   },
   "dependencies": {
     "medium-zoom": "^1.0.8",
-    "vue3-carousel": "^0.2.9"
+    "swiper": "^9.1.1"
   }
 }
