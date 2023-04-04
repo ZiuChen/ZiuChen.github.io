@@ -11,6 +11,7 @@ navbar: false
     logo: url,
     linkList: [
       { content: '🚀 快捷键一览', target: './shortcut/' },
+      { content: '🚚 更新日志', target: './log/' },
     ]
   }
   const imgSliders = [
@@ -32,5 +33,6 @@ navbar: false
 - 支持多级目录，目录支持无限嵌套
 - 支持通过粘贴/拖拽的方式批量上传图片、支持截取屏幕截图
 - 支持Markdown文件的批量导入、批量导出
+- 支持插件多开，同时编辑/参考多个文章
 - 支持实时同步预览、自动保存
 
