@@ -5,7 +5,9 @@ navbar: false
 
 <script setup>
   import url from './assets/logo.png'
-  import img1 from './assets/1.png'
+  import img1 from './assets/img1.png'
+  import img2 from './assets/img2.png'
+  import img3 from './assets/img3.png'
   const titleInfo = {
     subTitle: '✨ 强大的Markdown编辑器',
     logo: url,
@@ -16,6 +18,8 @@ navbar: false
   }
   const imgSliders = [
     { src: img1 },
+    { src: img2 },
+    { src: img3 },
   ]
 </script>
 
