@@ -179,11 +179,13 @@ const root = ReactDOM.createRoot(document.querySelector('#root'))
 root.render(<App />)
 ```
 
-我们可以写一个实例方法changeText来修改msg，然而此时changeText函数是不会正常工作的，我们在changeText中打log发现函数被正常触发了
+我们可以写一个实例方法changeText来修改msg，然而，此时我们点击按钮后发现，案例不能正常工作。
 
-为什么this.setState失效了？这和this的绑定有关：绑定的`changeText`在被调用时，向上找`this`找到的是`undefined`
+如果在changeText中打log，会发现函数被正常触发了，但是状态没有更新
 
-举一个类似情况的例子：
+为什么this.setState失效了？这和this的绑定有关：绑定的`changeText`在被调用时，向上找`this`找到的是全局的`this`即`undefined`
+
+这种情况有点类似于下面的例子：
 
 ```ts
 const app = new App()
@@ -228,7 +230,7 @@ root.render(<App />)
 
 在render函数中频繁通过`.bind`毕竟不太优雅，好在也有另一种方式：可以在constructor中提前对实例方法进行this绑定：
 
-```tsx {7, 11}
+```tsx {7,11}
 ...
 constructor() {
   super()
@@ -244,3 +246,99 @@ render() {
 }
 ...
 ```
+
+### 列表渲染
+
+可以通过循环，将数组渲染到视图中
+
+```tsx
+class App extends React.Component {
+  constructor() {
+    super()
+    this.state = {
+      movieList: [
+        'The Shawshank Redemption',
+        'The Godfather',
+        'The Godfather: Part II',
+        'The Dark Knight'
+      ]
+    }
+  }
+
+  render() {
+    return (
+      <ul>
+        {this.state.movieList.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    )
+  }
+}
+
+const root = ReactDOM.createRoot(document.querySelector('#root'))
+root.render(<App />)
+```
+
+需要注意的是，这里绑定的key的功能类似于Vue中的特殊属性key，它用来帮助React对列表渲染进行更高效的更新。
+
+### 计数器案例
+
+结合之前的知识，可以实现一个简单的计数器
+
+```tsx
+class App extends React.Component {
+  constructor() {
+    super()
+    this.state = {
+      count: 0
+    }
+    this.addCount = this.addCount.bind(this)
+    this.subCount = this.subCount.bind(this)
+  }
+
+  addCount() {
+    this.setState({
+      count: this.state.count + 1
+    })
+  }
+
+  subCount() {
+    this.setState({
+      count: this.state.count - 1
+    })
+  }
+
+  render() {
+    const { count } = this.state
+
+    return (
+      <div>
+        <h1>Count: {count}</h1>
+        <button onClick={this.addCount}>Add</button>
+        <button onClick={this.subCount}>Sub</button>
+      </div>
+    )
+  }
+}
+
+const root = ReactDOM.createRoot(document.querySelector('#root'))
+root.render(<App />)
+```
+
+## 认识JSX语法
+
+- 认识JSX语法
+- JSX基本使用
+- JSX事件绑定
+- JSX条件渲染
+- JSX列表渲染
+- JSX的原理与本质
+
+是因为我们给script标签添加了`type="text/babel"`属性，浏览器不会对这个script进行解析，当babel被加载完成后，babel会在页面中寻找`type="text/babel"`的script标签进行转义，转义后的代码才会被浏览器执行
+
+- JSX: JavaScript Extension / JavaScript XML
+- All in JS
+- 不同于Vue的模板语法 不需要专门学习模板语法中的指令(v-for/v-if/v-bind)
+
+
