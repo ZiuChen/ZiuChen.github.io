@@ -999,12 +999,14 @@ const root = ReactDOM.createRoot(document.querySelector('#root'))
 root.render(<App />)
 ```
 
-## React脚手架
+## React项目开发
 
 - 认识脚手架工具
 - create-react-app
 - 创建React项目
 - Webpack的配置
+
+### React脚手架
 
 类似于Vue提供的 `pnpm create vite` 创建一个模板，React也可以通过 `create-react-app` 来初始化一个空的React模板
 
@@ -1024,12 +1026,90 @@ import App from './App'
 const root = ReactDOM.createRoot(document.querySelector('#root'))
 root.render(<App />)
 
-// App.js
-import React from 'react'
+// App.jsx
+import { Component } from 'react'
 
-export default class App extends React.Component {
+export default class App extends Component {
   render() {
     return <div>Hello, React!</div>
   }
 }
 ```
+
+### React组件化开发
+
+- React组件生命周期
+- React组件间通信
+- React组件插槽
+- React非父子的通信
+- setState使用详解
+
+组件化是React的核心思想之一，组件化是一个抽象的过程，将大的应用程序抽象为多个小的组件，最终形成组件树
+
+分而治之，让代码更容易组织和管理
+
+React组件相对于Vue更加灵活多样，按照不同的方式可以分为多种组件
+
+- 根据组件定义方式，可以分为：函数组件(Functional Component)与类组件(Class Component)
+- 根据组件内部是否有状态需要维护，可以分为：无状态组件(Stateless Component)和有状态组件(Stateful Component)
+- 根据组件的不同职责，可以分为：展示型组件(Presentational Component)和容器型组件(Container Component)
+
+除此之外，还有异步组件、高阶组件等...
+
+### 类组件
+
+- 类组件的定义有以下要求：
+  - 组件的名称必须为大写（无论是类组件还是函数组件）
+  - 类组件需要继承自React.Component
+  - 类组件内必须实现render函数
+- 通过class关键字定义一个组件
+  - constructor是可选的，通常需要在constructor中初始化一些数据
+  - this.state中维护的数据就是组件内部的数据
+  - **render方法是class组件中唯一必须实现的方法**
+
+#### render函数
+
+- render函数在组件第一次渲染时被调用
+- 当`this.props`或`this.state`发生变化时被调用
+ 
+被调用时组件内会检查`this.props`和`this.state`是否发生变化，并且返回下面的返回值之一：
+
+- React元素
+  - 通常通过JSX创建
+  - 例如`<div />`会被React渲染为DOM节点，而`<SomeComponent />`会被React渲染为自定义组件
+  - 无论是`<div />`还是`<SomeComponent />`，他们都为React元素
+- 数组或Fragments组件
+  - 允许通过render方法同时返回多个元素
+- 字符串或数字
+  - 元素会被渲染
+- boolean/null/undefined类型
+  - 元素不会被渲染
+
+### 函数组件
+
+函数组件不需要继承自任何父类，函数的返回值相当于render函数的返回值，表示组件要渲染的内容
+
+修改前文中编写的`App.jsx`即可：
+
+```tsx
+// App.jsx
+export default function App() {
+  return <div>Hello, React!</div>
+}
+```
+
+- 函数组件是使用function定义的函数，函数的返回值会返回与render函数相同的内容，表示组件要渲染的内容
+- 函数组件有自己的特点（在无hooks的情况下，引入hooks后函数组件与类组件一样强大）
+  - 没有生命周期，也会被更新并挂在，但是没有生命周期函数
+  - this关键字不能指向组件实例，因为没有组件实例
+  - 没有内部状态（state）
+
+### 组件的生命周期
+
+我们需要在组件的不同生命周期中执行不同的操作，比如添加解除监听器、发起网络请求等
+
+![React Life Cycle: https://projects.wojtekmaj.pl/react-lifecycle-methods-diagram/](./React.assets/react-life-cycle.png)
+
+- `componentDidMount` 组件挂载后
+- `componentDidUpdate` 组件更新后
+- `componentWillUnmount` 组件卸载前
