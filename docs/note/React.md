@@ -1725,12 +1725,15 @@ export default class App extends Component {
 - 需要使用到该值的子组件通过 `UserCard.contextType = DarkModeContext` 绑定到上下文
 - 随后即可在子组件中通过 `this.context` 获取到此上下文当前绑定的状态值
 
-```tsx
+::: code-group
+```tsx [context.js]
 // context.js
 import { createContext } from 'react'
 
 export const DarkModeContext = createContext()
+```
 
+```tsx [App.jsx]
 // App.jsx
 import React, { Component } from 'react'
 import Profile from './components/Profile'
@@ -1773,7 +1776,9 @@ export default class Profile extends Component {
     )
   }
 }
+```
 
+```tsx [UserCard.jsx]
 // UserCard.jsx
 import React, { Component } from 'react'
 import { DarkModeContext } from '../context'
@@ -1791,6 +1796,7 @@ export default class UserCard extends Component {
 
 UserCard.contextType = DarkModeContext
 ```
+:::
 
 在类组件中可以通过Context共享数据，而函数组件中的this并没有指向组件实例，那么在函数式组件中应当如何使用？
 
@@ -1898,3 +1904,163 @@ export default function UserCard() {
 <Details {...this.props} />
 ...
 ```
+
+## EventBus跨组件通信
+
+很多第三方库实现了时间发布订阅，如 `tiny-emitter`
+
+可以借助EventBus完成全局状态共享：
+
+- 在 App.jsx 中点击按钮 触发全局事件并携带payload
+- 当 Player 组件挂载时 `componentDidMount` 添加play事件的监听
+- 当 Player 组件卸载时 `componentWillUnmount` 移除play事件的监听
+- 在 Player 组件中展示当前播放的音乐
+
+```tsx
+// App.jsx
+import React, { Component } from 'react'
+import Player from './components/Player'
+import { emit } from './eventbus'
+
+export default class App extends Component {
+  play = () => {
+    emit('play', { musicName: 'Hello, Music' })
+  }
+
+  render() {
+    return (
+      <>
+        <Player></Player>
+        <button onClick={this.play}>Play</button>
+      </>
+    )
+  }
+}
+
+// Player.jsx
+import React, { Component } from 'react'
+import { on, off } from '../eventbus'
+
+export default class Player extends Component {
+  constructor() {
+    super()
+    this.state = {
+      musicName: ''
+    }
+  }
+
+  playMusic = ({ musicName }) => {
+    console.log('Music Play: ' + musicName)
+    this.setState({ musicName })
+  }
+
+  componentDidMount() {
+    on('play', this.playMusic)
+  }
+
+  componentWillUnmount() {
+    off('play', this.playMusic)
+  }
+
+  render() {
+    return (
+      <div>
+        <h1>Player</h1>
+        <p>Now Playing: {this.state.musicName}</p>
+      </div>
+    )
+  }
+}
+```
+
+## setState的使用详解
+
+不同于Vue的自动追踪依赖，React是通过用户调用`setState`来获知状态的更新，所以开发者要更新状态不能直接`this.state.xxx = 'xxx'`，而必须通过`setState`方法。这样React在内部才能获知状态的更新，继而触发对视图的更新。
+
+从React的源码可以看到，setState方法是从Component集继承而来的
+
+![setState in source code of React](./React.assets/prototype-setState.png)
+
+### setState的异步更新
+
+当调用 `setState` 时，方法会使用 `Object.assign()` 方法将新旧state合并
+
+也可以通过传入回调函数来更新state
+
+```tsx
+// 传入一个state对象 更新state
+this.setState({
+  count: this.state.count + 1
+})
+
+// 传入回调函数 返回值作为将与旧state合并
+this.setState((state, props) => {
+  return {
+    count: state.count + 1
+  }
+})
+```
+
+传入回调函数来对state进行更新带来了一些好处：
+
+- 可以在回调中写心得state的逻辑（代码内聚性更强）
+- 回调函数会将之前的state和当前的props传递进来
+- setState在React的事件处理中是被异步调用的
+
+**如何获取异步更新的结果？**
+
+setState的异步更新也带来了一些问题，如果我们希望能在state变化后立即做出一些处理，可以使用到setState的第二个入参:
+
+第二个参数是一个回调函数，在回调函数中获取到的state为更新后的state最新值
+
+`setState((oldState, props) => newState, () => ... )`
+
+#### 为什么setState被设计为异步执行？
+
+[Github: RFClarification: why is setState asynchronous?](https://github.com/facebook/react/issues/11527#issuecomment-360199710)
+
+- 可以显著提升性能，出于性能优化考虑
+    - 假设`setState`是同步执行的，假设在调用函数后开发者连续调用了三次`setState`
+    - render函数会执行三次，创建三份不同的VDOM，执行三次Diff算法，三次更新到DOM上，带来重绘与重排...
+  - 如果在同一时间段内多次修改了state，那么React会在一段时间内的多次修改合并到一起，统一修改
+  - 这样，即使在同一时间多次触发`setState`，那么render函数也只会被调用一次
+- 如果同步更新state，那么render函数中通过props传参的子组件不会被更新，会出现数据不同步的问题
+  - 在setState后，可以立即获取到最新的state值，但是此时render函数并没有被执行
+
+#### setState一定是异步的吗？（React18之前）
+
+在React18之后，setState方法调用都为异步的（在生命周期中 或在方法中）
+
+但是在React18之前，某些情况下是同步的：
+
+```tsx
+// 异步执行 执行setState后当前state并未改变
+changeTitle = () => {
+  this.setState({ title: 'Hello, React!' })
+  console.log(this.state.title) // Hello, World!
+}
+
+// 同步执行
+changeTitle = () => {
+  setTimeout(() => {
+    this.setState({ title: 'Hello, React!' })
+    console.log(this.state.title) // Hello, React!
+  }, 0)
+}
+```
+
+- 这是因为setTimeout创建了一个宏任务，脱离了React内部的事件处理队列，不再受React的控制，从而达到了同步执行的效果
+- 同样的，如果是通过DOM监听器触发的回调中执行setState，也会作为宏任务执行，脱离React的事件处理队列
+
+在React18之后，即使是setTimeout中的回调也是异步执行的，所有的回调都将被放入React内部维护的队列中，批量更新
+
+> New Feature: Automatic Batching 
+> Batching is when React groups multiple state updates into a single re-render for better performance. Without automatic batching, we only batched updates inside React event handlers. Updates inside of promises, setTimeout, native event handlers, or any other event were not batched in React by default. With automatic batching, these updates will be batched automatically:
+> [What’s New in React 18](https://react.dev/blog/2022/03/29/react-v18#new-feature-automatic-batching)
+
+- 将多个状态更新会放到一次re-render中，为了更好的性能
+- 只在React事件处理函数才会有批处理
+- 之前：在promise/setTimeout/原生事件处理器以及其他的事件默认没有被批处理
+- 现在：都会被做批量处理，收集state改变，统一更新
+
+
