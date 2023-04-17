@@ -1036,7 +1036,7 @@ export default class App extends Component {
 }
 ```
 
-### React组件化开发
+## React组件化开发
 
 - React组件生命周期
 - React组件间通信
@@ -1104,12 +1104,797 @@ export default function App() {
   - this关键字不能指向组件实例，因为没有组件实例
   - 没有内部状态（state）
 
-### 组件的生命周期
+## 组件的生命周期
 
 我们需要在组件的不同生命周期中执行不同的操作，比如添加解除监听器、发起网络请求等
 
 ![React Life Cycle: https://projects.wojtekmaj.pl/react-lifecycle-methods-diagram/](./React.assets/react-life-cycle.png)
 
+结合上图，解读一下组件的完整生命周期：
+
+- 组件挂载后 调用构造方法 constructor
+- 执行 render 方法
+- 组件挂载完毕 `componentDidMount`
+- 后续，当props发生修改 或调用了setState触发state改变 或调用forceUpdate触发组件更新
+  - 重新执行render函数 根据修改后的最新状态更新视图
+  - React帮我们更新DOM和refs
+  - 更新回调 `componentDidUpdate` 被调用
+- 组件卸载 一般是条件渲染切换路由时发生卸载
+- 组件被卸载前 `componentWillUnmount` 被调用
+  - 可以用来执行一些清理副作用的操作
+  - 如解除监听器等
+
+总结一下常用的生命周期钩子：
+
 - `componentDidMount` 组件挂载后
 - `componentDidUpdate` 组件更新后
 - `componentWillUnmount` 组件卸载前
+
+```tsx
+// LifeCycle.jsx
+import { Component } from 'react'
+
+export default class LifeCycle extends Component {
+  constructor() {
+    super()
+    this.state = {
+      count: 0
+    }
+  }
+
+  addCount = () => {
+    this.setState({
+      count: this.state.count + 1
+    })
+  }
+
+  componentDidMount() {
+    console.log('LifeCycle componentDidMount')
+  }
+
+  componentDidUpdate() {
+    console.log('LifeCycle componentDidUpdate')
+  }
+
+  componentWillUnmount() {
+    console.log('LifeCycle componentWillUnmount')
+  }
+
+  render() {
+    console.log('LifeCycle render')
+    return (
+      <div>
+        <h1>LifeCycle</h1>
+        <p>{this.state.count}</p>
+        <button onClick={this.addCount}>+</button>
+      </div>
+    )
+  }
+}
+```
+
+### constructor
+
+一般来讲 constructor 中只完成两件事情
+
+- 给this.state赋初值 初始化组件内部状态
+- 为事件处理函数绑定实例(.bind(this))
+
+如果不初始化state或不进行方法绑定，则不需要为React组件实现构造函数
+
+### componentDidMount
+
+该生命周期钩子会在组件挂载后被立即调用，相当于Vue中的onMounted
+
+在该生命周期钩子中可以获取到组件的DOM结构，通常在其中完成以下操作：
+
+- 依赖于DOM的操作 需要操作DOM
+- 在此处发送网络请求 (Official Recommend)
+- 在此处添加一些订阅监听回调 (在 componentWillUnmount 中取消订阅)
+
+### componentDidUpdate
+
+会在组件更新后被立即调用，首次渲染不会执行此方法
+
+- 每次组件发生更新后，可以在此回调中对DOM进行操作
+- 如果对更新前后的props进行了比较，也可以选择在此处进行网络请求
+  - 比如当props未发生改变，则不执行网络请求
+
+### componentWillUnmount
+
+组件卸载及销毁之前调用
+
+- 在此回调中执行必要的清理操作
+- 例如 清除timer 取消网络请求 或取消在 componentDidMount 中创建的订阅等
+
+### 不常用的生命周期
+
+- static getDeivedStateFromProps
+  - state的值在任何时候都依赖props时使用，该方法返回一个对象来更新state
+- shouldComponentUpdate
+  - 对外部条件进行显式比较 决定是否需要对组件进行更新
+  - 在此生命周期回调中返回false时 不会触发re-render 可以完成一些性能优化
+- getSnapshotBeforeUpdate
+  - 在更新前获取快照 用于更新DOM前对部分数据进行保存
+  - 比如在DOM更新前获取并保存当前滚动位置
+
+## 组件间通信
+
+组件间通过props通信
+
+- 父组件通过直接在子组件上添加属性 `title={someValue}` 传递数据
+- 子组件中通过 props 参数获取父组件传递来的数据
+
+需要注意的是，子组件中需要通过 `super(props)` 将props注册给父类，这样才能通过`this.props`获取到props
+
+但是默认情况下React帮我们完成了这个操作，我们也就不必手动在constructor写了
+
+```tsx
+// Header.jsx
+import React, { Component } from 'react'
+
+export default class Header extends Component {
+  // constructor(props) {
+  //   super(props)
+  // }
+
+  render() {
+    const { title, count, tabs } = this.props
+
+    return (
+      <div>
+        <h2>Title: {title}</h2>
+        <h2>Count: {count}</h2>
+        <ul>
+          {tabs.map((tab, index) => (
+            <li key={index}>{tab}</li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+}
+
+// App.jsx
+import React, { Component } from 'react'
+import Header from './components/Header'
+
+export default class App extends Component {
+  render() {
+    return (
+      <div>
+        <Header title="Custom Title" count={1} tabs={['Home', 'Category', 'User']} />
+      </div>
+    )
+  }
+}
+```
+
+上文中的例子我们从父组件向子组件传递数据，但是数据都为静态的
+
+我们再完成一个动态数据的绑定，用到了axios请求网络数据，并将数据动态传递给子组件
+
+在父组件的 componentDidMount 中发起网络请求，获取到 postList 后通过props动态传递给子组件 Content 展示出来
+
+```tsx
+// Content.jsx
+import React, { Component } from 'react'
+
+export default class Content extends Component {
+  render() {
+    const { postList } = this.props
+
+    return (
+      <div>
+        <ul>
+          {postList.map((post) => {
+            return <li key={post.id}>{post.title}</li>
+          })}
+        </ul>
+      </div>
+    )
+  }
+}
+
+// App.jsx
+import React, { Component } from 'react'
+import axios from 'axios'
+import Content from './components/Content'
+
+export default class App extends Component {
+  constructor() {
+    super()
+    this.state = {
+      postList: []
+    }
+  }
+
+  componentDidMount() {
+    axios.get('https://jsonplaceholder.typicode.com/posts').then((res) => {
+      this.setState({
+        postList: res.data
+      })
+    })
+  }
+
+  render() {
+    const { postList } = this.state
+    return (
+      <div>
+        <Content postList={postList} />
+      </div>
+    )
+  }
+}
+```
+
+### 子组件向父组件通信
+
+除了父组件向下传递数据，子组件也需要向上传递数据给父组件。
+
+在React中是通过父组件提供给子组件一个回调函数，在子组件中调用回调函数，从而达到子组件向父组件通信的目的
+
+父组件在提供数据状态 `count` 的同时，也提供了增减 `count` 的回调函数 `addCount` 和 `subCount`，子组件通过调用回调即可修改状态值
+
+```tsx
+// Counter.jsx
+import React, { Component } from 'react'
+
+export default class Counter extends Component {
+  render() {
+    const { count, addCount, subCount } = this.props
+    return (
+      <div>
+        <button onClick={subCount}>-</button>
+        <span>{count}</span>
+        <button onClick={addCount}>+</button>
+      </div>
+    )
+  }
+}
+
+// App.jsx
+import React, { Component } from 'react'
+import Counter from './components/Counter'
+
+export default class App extends Component {
+  constructor() {
+    super()
+    this.state = {
+      count: 0
+    }
+  }
+
+  addCount = () => {
+    this.setState({
+      count: this.state.count + 1
+    })
+  }
+
+  subCount = () => {
+    this.setState({
+      count: this.state.count - 1
+    })
+  }
+
+  render() {
+    const { count } = this.state
+    return (
+      <div>
+        <Counter count={count} addCount={this.addCount} subCount={this.subCount}></Counter>
+      </div>
+    )
+  }
+}
+```
+
+### 参数propTypes
+
+我们可以对props传递值的类型做限制 （目前官方已不再推荐使用prop-types 建议直接上TypeScript）
+
+- 如果项目中默认集成了Flow或TypeScript，可以直接进行类型验证
+- 如果没有集成，则可以通过 prop-types 库来进行参数类型验证
+- 从React v15.5起，React.PropTypes独立成为了一个npm包 prop-types 库
+
+```sh
+pnpm add prop-types
+```
+
+以之前的类组件 Header 为例，为其添加类型限制：
+
+```tsx {3,27-31}
+// Header.jsx
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+
+export default class Header extends Component {
+  // constructor(props) {
+  //   super(props)
+  // }
+
+  render() {
+    const { title, count, tabs } = this.props
+
+    return (
+      <div>
+        <h2>Title: {title}</h2>
+        <h2>Count: {count}</h2>
+        <ul>
+          {tabs.map((tab, index) => (
+            <li key={index}>{tab}</li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+}
+
+Header.propTypes = {
+  title: PropTypes.string.isRequired,
+  count: PropTypes.number.isRequired,
+  tabs: PropTypes.array.isRequired
+}
+
+Header.defaultProps = {
+  title: 'Default Title',
+  count: 0
+}
+```
+
+- 可以直接在组件类上添加`.propsType`为其添加类型检查
+- 也可以添加`.defaultProps`为其传入默认值
+
+需要注意的是，这里的类型限制和Vue做的defineProps类型限制是类似的，如果没有IDE Extension做额外检查，其类型检查都是在运行时进行的
+
+如果props类型发生不匹配，在运行时会在控制台抛出错误，而编译是可以正常完成的
+
+> Warning: Failed prop type: Invalid prop `title` of type `number` supplied to `Header`, expected `string`.
+
+相比之下，TypeScript可以完成静态的类型检查，帮助我们更早的发现错误
+
+### 组件通信案例 Tab栏切换
+
+展示一个Tabs，点击切换页面，并切换不同的Tab激活状态。
+
+切换activeIndex后，触发Tabs组件和下方Pages组件的重新渲染
+
+这里对className的拼接可以用第三方库 classnames 替换
+
+```tsx
+// Tabs.jsx
+import React, { Component } from 'react'
+
+export default class Tabs extends Component {
+  render() {
+    const { tabs, activeIndex, changeTab } = this.props
+
+    return (
+      <div className="tabs" style={{ display: 'flex' }}>
+        {tabs.map((tabName, index) => (
+          <div
+            className={['tab', activeIndex === index ? 'tab-active' : ''].join('')}
+            onClick={changeTab(index)}
+            style={{
+              margin: 5,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              color: activeIndex === index ? 'red' : 'black',
+              borderBottom: activeIndex === index ? '2px solid red' : ''
+            }}
+          >
+            {tabName}
+          </div>
+        ))}
+      </div>
+    )
+  }
+}
+
+// App.jsx
+import React, { Component } from 'react'
+import Tabs from './components/Tabs'
+
+export default class App extends Component {
+  constructor() {
+    super()
+    this.state = {
+      tabs: ['Home', 'Hot', 'Category', 'Profile'],
+      activeIndex: 0
+    }
+  }
+
+  changeTab = (index) => () => {
+    this.setState({
+      activeIndex: index
+    })
+  }
+
+  render() {
+    const { tabs, activeIndex } = this.state
+    return (
+      <div>
+        <Tabs tabs={tabs} activeIndex={activeIndex} changeTab={this.changeTab}></Tabs>
+        {tabs[activeIndex] === 'Home' && <h2>Home</h2>}
+        {tabs[activeIndex] === 'Hot' && <h2>Hot</h2>}
+        {tabs[activeIndex] === 'Category' && <h2>Category</h2>}
+        {tabs[activeIndex] === 'Profile' && <h2>Profile</h2>}
+      </div>
+    )
+  }
+}
+```
+
+## React中的插槽
+
+React并不存在插槽的概念，但是可以通过`props.children`来实现类似的效果
+
+- 可以通过向子组件传递`props.children`子元素来决定子组件内渲染何种内容的标签
+- 我们在子组件标签内书写的内容都会默认作为`props.children`传递给子组件
+
+### 通过children实现插槽
+
+实现一个导航栏NavBar组件，左中右布局，渲染内容由父组件决定
+
+需要注意的是 如果只传入了一个子标签，那么`props.children`不再是一个数组，需要对此做额外判断
+
+```tsx
+// NavBar.jsx
+import React, { Component } from 'react'
+
+export default class NavBar extends Component {
+  render() {
+    const { children } = this.props
+
+    Array.isArray(children) || (children = [children])
+
+    return (
+      <div
+        className="nav-bar"
+        style={{ display: 'flex', justifyContent: 'space-between', alignContent: 'center' }}
+      >
+        <div className="left">{children[0]}</div>
+        <div className="center">{children[1]}</div>
+        <div className="right">{children[2]}</div>
+      </div>
+    )
+  }
+}
+
+// App.jsx
+import React, { Component } from 'react'
+import NavBar from './components/NavBar'
+
+export default class App extends Component {
+  render() {
+    return (
+      <div>
+        <NavBar>
+          <span>Back</span>
+          <div>Search</div>
+          <div>Menu</div>
+        </NavBar>
+      </div>
+    )
+  }
+}
+```
+
+### 通过props实现插槽
+
+相比于通过`props.children`传递插槽，通过props实现的插槽更具确定性
+
+```tsx
+// NavBar.jsx
+import React, { Component } from 'react'
+
+export default class NavBar extends Component {
+  render() {
+    const { left, center, right } = this.props
+
+    return (
+      <div
+        className="nav-bar"
+        style={{ display: 'flex', justifyContent: 'space-between', alignContent: 'center' }}
+      >
+        <div className="left">{left}</div>
+        <div className="center">{center}</div>
+        <div className="right">{right}</div>
+      </div>
+    )
+  }
+}
+
+// App.jsx
+import React, { Component } from 'react'
+import NavBar from './components/NavBar'
+
+export default class App extends Component {
+  render() {
+    const left = <span>Back</span>
+    const center = <div>Search</div>
+    const right = <div>Menu</div>
+
+    return (
+      <div>
+        <NavBar left={left} center={center} right={right}></NavBar>
+      </div>
+    )
+  }
+}
+```
+
+### 作用域插槽
+
+在Vue中，可以通过作用域插槽，在父组件插槽内容中注入插槽的数据
+
+- 标签与结构由父组件决定
+- 数据内容由子组件对外暴露
+
+重写之前的Tabs例子，可以将插槽传递的内容由静态的React元素变为一个函数，这样在子组件内部就可以通过函数传参，动态地对外暴露数据
+
+之前每个Tab使用`span`标签书写的，通过作用域插槽，我们将它通过`button`标签渲染出来
+
+```tsx{6,22,57}
+// Tabs.jsx
+import React, { Component } from 'react'
+
+export default class Tabs extends Component {
+  render() {
+    const { tabs, activeIndex, changeTab, tabSlot } = this.props
+
+    return (
+      <div className="tabs" style={{ display: 'flex' }}>
+        {tabs.map((tabName, index) => (
+          <div
+            className={['tab', activeIndex === index ? 'tab-active' : ''].join('')}
+            onClick={changeTab(index)}
+            style={{
+              margin: 5,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              color: activeIndex === index ? 'red' : 'black',
+              borderBottom: activeIndex === index ? '2px solid red' : ''
+            }}
+          >
+            {tabSlot ? tabSlot(tabName) : tabName}
+          </div>
+        ))}
+      </div>
+    )
+  }
+}
+
+// App.jsx
+import React, { Component } from 'react'
+import Tabs from './components/Tabs'
+
+export default class App extends Component {
+  constructor() {
+    super()
+    this.state = {
+      tabs: ['Home', 'Hot', 'Category', 'Profile'],
+      activeIndex: 0
+    }
+  }
+
+  changeTab = (index) => () => {
+    this.setState({
+      activeIndex: index
+    })
+  }
+
+  render() {
+    const { tabs, activeIndex } = this.state
+    return (
+      <div>
+        <Tabs
+          tabs={tabs}
+          activeIndex={activeIndex}
+          changeTab={this.changeTab}
+          tabSlot={(content) => <button>{content}</button>}
+        ></Tabs>
+        {tabs[activeIndex] === 'Home' && <h2>Home</h2>}
+        {tabs[activeIndex] === 'Hot' && <h2>Hot</h2>}
+        {tabs[activeIndex] === 'Category' && <h2>Category</h2>}
+        {tabs[activeIndex] === 'Profile' && <h2>Profile</h2>}
+      </div>
+    )
+  }
+}
+```
+
+## Context跨组件传参
+
+非父子组件之间的数据共享
+
+- props层层传递 跨组件会很不方便 对于中间那些本不需要这些props数据的组件是冗余的
+- 第三方状态库 外置于React 如Redux （实际开发中较为常用）
+- 事件总线 ...
+
+针对跨组件传参的场景，React提供了一个API名为Context
+
+- Context 提供了一个在组件之间共享此类值的方式，而不是显式地通过组件树逐层传递props
+- 使用 Context 共享那些全局的数据，如主题色、用户登录状态、locales等
+
+### 用Context实现跨组件传参
+
+假设有App Profile UserCard三个嵌套组件，我们希望App中的 `isDarkMode` 状态能够透传到UserCard组件中
+
+- 全局通过 `createContext` 创建一个上下文
+- 根组件通过 `DarkModeContext.Provider` 标签与 `value` 传递值到上下文中
+- 需要使用到该值的子组件通过 `UserCard.contextType = DarkModeContext` 绑定到上下文
+- 随后即可在子组件中通过 `this.context` 获取到此上下文当前绑定的状态值
+
+```tsx
+// context.js
+import { createContext } from 'react'
+
+export const DarkModeContext = createContext()
+
+// App.jsx
+import React, { Component } from 'react'
+import Profile from './components/Profile'
+import { DarkModeContext } from './context'
+
+export default class App extends Component {
+  constructor() {
+    super()
+    this.state = {
+      darkMode: false
+    }
+  }
+
+  changeDarkMode = () => {
+    this.setState({ darkMode: !this.state.darkMode })
+  }
+
+  render() {
+    const { darkMode } = this.state
+
+    return (
+      <DarkModeContext.Provider value={darkMode}>
+        <Profile />
+        <button onClick={this.changeDarkMode}>Change DarkMode</button>
+      </DarkModeContext.Provider>
+    )
+  }
+}
+
+// Profile.jsx
+import React, { Component } from 'react'
+import UserCard from './UserCard'
+
+export default class Profile extends Component {
+  render() {
+    return (
+      <div>
+        <UserCard />
+      </div>
+    )
+  }
+}
+
+// UserCard.jsx
+import React, { Component } from 'react'
+import { DarkModeContext } from '../context'
+
+export default class UserCard extends Component {
+  render() {
+    return (
+      <div>
+        <h1>UserCard</h1>
+        {this.context ? <h2>Dark Mode</h2> : <h2>Light Mode</h2>}
+      </div>
+    )
+  }
+}
+
+UserCard.contextType = DarkModeContext
+```
+
+在类组件中可以通过Context共享数据，而函数组件中的this并没有指向组件实例，那么在函数式组件中应当如何使用？
+
+用函数式组件重写一下 UserCard
+
+```tsx
+// UserCard.jsx
+import { DarkModeContext } from '../context'
+
+export default function UserCard() {
+  return (
+    <DarkModeContext.Consumer>
+      {(context) => (
+        <div>
+          <h1>UserCard</h1>
+          {context ? <h2>Dark Mode</h2> : <h2>Light Mode</h2>}
+        </div>
+      )}
+    </DarkModeContext.Consumer>
+  )
+}
+```
+
+如果同时需要共享多个状态，Provider可以嵌套，那么在子组件中可以通过不同的Context.Consumer获取到不同的全局上下文，执行不同的操作，展示不同的内容
+
+### React.createContext
+
+- 创建一个需要共享的Context对象
+- 如果一个组件订阅了Context，那么这个组件会从自身最近的那个匹配的Provider中读取到当前的context值
+- defaultValue是组件在顶层查找过程中没有找到对应的Provider，那么就使用默认值
+- `const SomeContext = React.createContext(defaultValue)`
+
+### Context.Provider
+
+- 每个Context对象都会返回一个Provider组件，它允许消费组件订阅Context的变化
+- Provider接收一个value属性，用于将变化的值传递给消费组件Consumer
+- 一个Provider可以与多个Consumer创建关系
+- 多个Provider可以嵌套使用，内层数据会覆盖外层数据
+- 当Provider的value发生变化时，其内部的所有Consumer组件都会重新渲染
+
+### Class.contextType
+
+- 挂载在类组件上的 `contextType` 属性会被重新赋值为一个由 `React.createContext` 创建的Context对象
+- 这允许你在类组件中通过 `this.context` 获取到**最近的Context**的值
+- 任何生命周期都能访问到这个值
+
+### Context.Consumer
+
+- 帮你在**函数式组件**中完成订阅context （函数式组件中没有this）
+- 当Consumer订阅到context变更，会触发其内部传递的函数
+- 传入Consumer的函数接收当前的context值，返回一个React元素节点
+
+### 关于defaultValue
+
+什么时候会用到创建Context时传入的defaultValue？
+
+如果子组件通过 `this.context` 向上查找时没有找到相应的Provider，则使用Context的默认值
+
+```tsx{10}
+...
+  render() {
+    const { darkMode } = this.state
+
+    return (
+      <>
+        <DarkModeContext.Provider value={darkMode}>
+          <button onClick={this.changeDarkMode}>Change DarkMode</button>
+        </DarkModeContext.Provider>
+        <Profile />
+      </>
+    )
+  }
+...
+```
+
+### props属性展开
+
+如果我们希望将一个对象中的所有属性都作为props传递给子组件，可以在子组件标签上直接展开该对象
+
+类似于Vue中的`v-bind="childProps"`，一次绑定所有属性到子组件
+
+```tsx{6}
+...
+  render() {
+    const { childProps } = this.state
+    return (
+      <div>
+        <Child {...childProps} />
+      </div>
+    )
+  }
+...
+```
+
+如果你确实希望层层传递props来实现跨组件通信，那么可以在render函数中直接将`this.props`进行属性展开，虽然不推荐这样的做法：
+
+```tsx
+// App.jsx
+<App {...this.props} />
+// Profile.jsx
+<Profile {...this.props} />
+// UserCard.jsx
+<UserCard {...this.props} />
+// Details.jsx
+<Details {...this.props} />
+...
+```
