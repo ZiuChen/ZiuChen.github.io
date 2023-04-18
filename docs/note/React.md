@@ -2055,7 +2055,9 @@ changeTitle = () => {
 在React18之后，即使是setTimeout中的回调也是异步执行的，所有的回调都将被放入React内部维护的队列中，批量更新
 
 > New Feature: Automatic Batching 
+> 
 > Batching is when React groups multiple state updates into a single re-render for better performance. Without automatic batching, we only batched updates inside React event handlers. Updates inside of promises, setTimeout, native event handlers, or any other event were not batched in React by default. With automatic batching, these updates will be batched automatically:
+> 
 > [What’s New in React 18](https://react.dev/blog/2022/03/29/react-v18#new-feature-automatic-batching)
 
 - 将多个状态更新会放到一次re-render中，为了更好的性能
@@ -2063,4 +2065,463 @@ changeTitle = () => {
 - 之前：在promise/setTimeout/原生事件处理器以及其他的事件默认没有被批处理
 - 现在：都会被做批量处理，收集state改变，统一更新
 
+在React18之后，可以通过 `flushSync(() => { ... })` 让 `setState` 实现同步更新：
 
+```tsx {2}
+...
+flushSync(() => {
+  this.setState({
+    message: 'Hello, React!'
+  })
+
+  this.setState({
+    message: 'Hello, React18!'
+  })
+})
+
+console.log(this.state.message) // Hello, React18
+...
+```
+
+## React性能优化SCU
+
+### React的更新机制
+
+之前我们已经了解了React的渲染流程：JSX => 虚拟DOM => 真实DOM
+
+React的更新流程：
+
+- props/state改变
+- render函数重新执行
+- 产生新的虚拟DOM树
+- diff新旧虚拟DOM树
+- 计算出差异执行局部更新 更新真实DOM
+- 获取到真实DOM
+
+### 关于diff算法
+
+- React需要基于两棵新旧虚拟DOM树来判断如何更高效地更新UI
+- 如果一棵树参考另一棵树完全比较更新，那么即使是最先进的算法，时间复杂度为$O(n^2)$，其中$n$是树中节点的数量
+- 如果React中使用了这样的算法，当节点数量提高，那计算量是巨大的，会造成巨量的性能开销，更新性能较差
+
+针对普通diff算法的缺陷，React对其进行了优化，将其时间复杂度优化到了$O(n)$
+
+- 同级节点之间互相比较，节点不会跨级比较
+- 不同类型的节点产生不同的树结构
+- 开发中可以通过绑定 `key` 来保证哪些节点在不同的渲染下保持稳定（跳过diff 尽可能复用节点 避免更新）
+
+这意味着，如果根节点的类型发生变化，即使所有子节点都未发生变化，那整棵树也都将重新渲染，这也是一种取舍
+
+### 关于key的优化
+
+- 如果我们在渲染列表时没有绑定 `key` 属性，控制台会抛出警告提示
+- key的优化也是分为不同场景的
+  - 向列表末位插入数据
+    - key的优化意义不大 插入新数据时前面数据不会发生改变
+  - 向列表前插入数据
+    - 该场景下应当传key 否则列表发生变化时所有列表都会发生re-render
+- key必须为唯一的 唯一代表当前节点
+- 不要使用随机数 这脱离了绑定key的初衷
+- 使用index作为key时没有意义 对性能优化没有助益
+
+### 引入shouldComponentUpdate
+
+这里我们首先引入一个例子：在App组件中包含两个纯展示组件Home和Profile。
+
+观察控制台输出，当页面第一次渲染时，所有组件的 `render` 函数都会被执行
+
+但是当我们点击按钮，修改App中的`state.count`时，实际上只有`h1`标签的内容发生了变化
+
+此时观察控制台，Home和Profile的render函数又都被执行了一次，这显然是不合理的，因为这两个组件的内容没有发生变化
+
+```tsx
+import React, { Component } from 'react'
+
+export class Home extends Component {
+  render() {
+    console.log('Home render')
+    return <h1>Home</h1>
+  }
+}
+
+export class Profile extends Component {
+  render() {
+    console.log('Profile render')
+    return <h1>Profile</h1>
+  }
+}
+
+export default class App extends Component {
+  constructor() {
+    super()
+    this.state = {
+      count: 0
+    }
+  }
+
+  render() {
+    console.log('App render')
+    return (
+      <div>
+        <h1>Count: {this.state.count}</h1>
+        <button onClick={() => this.setState({ count: this.state.count + 1 })}>+1</button>
+        <Home />
+        <Profile />
+      </div>
+    )
+  }
+}
+```
+
+这样的场景下，可以通过 `shouldComponentUpdate` 生命周期返回 `false` 来决定当前组件是否发生更新
+
+判断两次state是否发生改变，只有改变时才触发re-render
+
+```tsx
+...
+// nextProps: 修改后最新的Props
+// nextState: 修改后最新的State
+shouldComponentUpdate(nextProps, nextState) {
+  // 只有两次不等时 才发生更新
+  return this.state.count !== nextState.count
+}
+...
+```
+
+在组件内部也可以使用类似的优化手段，自行决定是否更新
+
+需要注意的是，`shouldComponentUpdate` 只会进行浅层比较，如果比较的props或state是引用类型的数据，则不适合用这样的方式
+
+### PureComponent
+
+显然，如果每次都通过编写 `shouldComponentUpdate` (SCU) 来决定更新是很繁琐的，React为我们提供了更方便的用法：React.PureComponent
+
+如果你正在编写类组件，那么你可以使用 PureComponent (纯组件) 包裹你的组件内容，它会来帮你完成跳过更新，它的本质和 `shouldComponentUpdate` 是一样的：相同输入导致相同输出，输入相同时不必重新渲染
+
+使用PureComponent对之前Counter的例子进行修改：
+
+当执行 `changeTitle` 修改父组件状态时，不会触发 Counter 的重新渲染，而只有在修改和 Counter 相关联的状态 count 时，其才会re-render
+
+```tsx {4}
+// Counter.jsx
+import React, { PureComponent } from 'react'
+
+export default class Counter extends PureComponent {
+  render() {
+    const { count, addCount, subCount } = this.props
+    return (
+      <div>
+        <button onClick={subCount}>-</button>
+        <span>{count}</span>
+        <button onClick={addCount}>+</button>
+      </div>
+    )
+  }
+}
+
+// App.jsx
+import React, { Component } from 'react'
+import Counter from './components/Counter'
+
+export default class App extends Component {
+  constructor() {
+    super()
+    this.state = {
+      count: 0,
+      title: 'Hello, World!'
+    }
+  }
+
+  changeTitle = () => {
+    this.setState({
+      title: new Date().getTime()
+    })
+  }
+
+  ...
+
+  render() {
+    const { title, count } = this.state
+    return (
+      <div>
+        <h2>{title}</h2>
+        <button onClick={this.changeTitle}>Change Title</button>
+        <Counter count={count} addCount={this.addCount} subCount={this.subCount}></Counter>
+      </div>
+    )
+  }
+}
+```
+
+### 函数式组件 memo
+
+我们知道，函数式组件是没有生命周期的，要在函数式组件中使用类似的性能优化手段，可以使用 `memo` 这个API
+
+```tsx {4}
+// Recommand.jsx
+import { memo } from 'react'
+
+export default memo(function Recommand(props) {
+  console.log('Recommand render')
+  const { count } = props
+  return (
+    <div>
+      <h2>Recommand</h2>
+      <h3>count: {count}</h3>
+    </div>
+  )
+})
+```
+
+### 不可变数据的力量
+
+来自React官方文档，不可变数据指的是稳定的state和props
+
+我们在这里举一个简单的书籍列表的例子：
+
+我们首先向state中推入一条新数据，随后使用 `setState` 将当前的状态作为更新源，点击按钮后页面是可以正常更新的
+
+```tsx {4,21-22}
+// BookList.jsx
+import React, { Component } from 'react'
+
+export default class BookList extends Component {
+  constructor() {
+    super()
+    this.state = {
+      books: [
+        { id: 1, name: 'book1', price: 10 },
+        { id: 2, name: 'book2', price: 20 },
+        { id: 3, name: 'book3', price: 30 },
+        { id: 4, name: 'book4', price: 40 }
+      ]
+    }
+  }
+
+  addBook = () => {
+    const newBook = { id: new Date().getDate(), name: 'book5', price: 50 }
+    this.state.books.push(newBook)
+    this.setState({ books: this.state.books })
+  }
+
+  render() {
+    const { books } = this.state
+
+    return (
+      <div>
+        <ul className="books">
+          {books.map((book) => {
+            return (
+              <li className="book" key={book.id}>
+                <span>{book.name}</span>
+                <span>{book.price}</span>
+              </li>
+            )
+          })}
+        </ul>
+        <button onClick={this.addBook}>add Book</button>
+      </div>
+    )
+  }
+}
+```
+
+然而，一旦如果我们将 `Component` 替换为 `PureComponent`
+
+由于 `shouldComponentUpdate` 是**浅层比较**的
+
+传入 `setState` 的更新源 `books` 的引用地址和 `this.state.books` 是相同的，**即使内部数据发生了添加，更新也会被跳过**
+
+最好的方式就是，**保证每次传入 `setState` 的值都是新的**，保证组件能够被正常渲染更新
+
+```tsx
+...
+this.setState({
+  books: [
+    ...this.state.books,
+    { id: new Date().getDate(), name: 'book5', price: 50 }
+  ]
+})
+...
+```
+
+这里的“不可变数据的力量”，指的就是保持state中数据稳定，如果我们希望修改state中的数据，则应当将state.xxx完整替换为一个新的对象
+
+从源码层面，在源码内部React实现了一个方法 `checkShouldComponentUpdate`，如果组件内部定义了 `shouldComponentUpdate` 则会通过此方法进行检查
+
+如果是 PureComponent，则会从组件原型上检查 `isPureReactComponent`，继而通过 shallowEqual 浅层比较判断 oldState & newState 是否相等
+
+## 获取DOM的方式 refs
+
+### 使用Ref获取到真实DOM
+
+某些情况下我们需要直接操作DOM，在Vue中可以通过在template中绑定ref获取到DOM元素
+
+- 方式1：在ReactElement上绑定ref属性 值为字符串 （已被废弃）
+- 方式2：通过 `createRef` 创建一个ref并动态绑定到ReactElement上
+- 方式3：给ref属性传入一个函数，当DOM被创建时将作为参数传递到函数中
+
+```tsx
+// method 1: bind string to ref attribute
+import React, { PureComponent } from 'react'
+
+export default class Input extends PureComponent {
+  getNativeDOM = () => {
+    console.log(this.refs.input) // <input type="text" />
+  }
+
+  render() {
+    return (
+      <div>
+        <input ref="input" type="text" />
+        <button onClick={this.getNativeDOM}>getNativeDOM</button>
+      </div>
+    )
+  }
+}
+```
+
+```tsx {7,10,16}
+// method 2: dynamic bind Ref object to target Element's ref attribute
+import React, { PureComponent, createRef } from 'react'
+
+export default class Input extends PureComponent {
+  constructor() {
+    super()
+    this.inputRef = createRef()
+  }
+  getNativeDOM = () => {
+    console.log(this.inputRef.current) // <input type="text" />
+  }
+
+  render() {
+    return (
+      <div>
+        <input ref={this.inputRef} type="text" />
+        <button onClick={this.getNativeDOM}>getNativeDOM</button>
+      </div>
+    )
+  }
+}
+```
+
+```tsx {8}
+// method 3: bind a function to ref attribute of target element
+import React, { PureComponent } from 'react'
+
+export default class Input extends PureComponent {
+  render() {
+    return (
+      <div>
+        <input ref={(e) => console.log(e)} type="text" />
+      </div>
+    )
+  }
+}
+```
+
+### 获取组件实例
+
+通过类似的方法，可以直接获取到组件实例，也可以直接调用组件实例上的方法
+
+```tsx
+import React, { PureComponent, createRef } from 'react'
+
+class CustomInput extends PureComponent {
+  foo = () => {
+    console.log('CustomInput foo called')
+  }
+
+  render() {
+    return <input type="text" />
+  }
+}
+
+export default class Input extends PureComponent {
+  constructor() {
+    super()
+    this.customInputRef = createRef()
+  }
+
+  getComponent = () => {
+    this.customInputRef.current.foo()
+  }
+
+  render() {
+    return (
+      <div>
+        <CustomInput ref={this.customInputRef} />
+        <button onClick={this.getComponent}>getComponent</button>
+      </div>
+    )
+  }
+}
+```
+
+但是，函数式组件没有实例，更别提直接调用实例方法了。类似于Vue3中通过setup创建的组件，我们需要对函数式组件做额外处理，类似于`defineExpose`
+
+这时就需要用到新的API：`forwardRef` 和 `useImperativeHandle`
+
+- `forwardRef` 用于将ref属性传递给函数式组件
+  - 父组件传递给子组件的ref属性，会被React自动传递给子组件的第二个参数，即 `forwardRef` 的第二个参数
+- `useImperativeHandle` 用于将函数式组件内部的方法暴露给父组件
+
+```tsx
+import React, { PureComponent, createRef, forwardRef, useImperativeHandle } from 'react'
+
+const CustomInput = forwardRef((props, ref) => {
+  const foo = () => {
+    console.log('CustomInput foo called')
+  }
+
+  useImperativeHandle(ref, () => ({
+    foo
+  }))
+
+  return <input type="text" ref={ref} {...props} />
+})
+...
+```
+
+## 受控和非受控组件
+
+在React中，HTML表单的处理方式和普通DOM元素不太一样：表单通常会保存在一些内部的state中，并且根据用户的输入进行更新
+
+```tsx
+// Input.jsx
+import React, { PureComponent } from 'react'
+
+export default class Input extends PureComponent {
+  constructor(props) {
+    super(props)
+    this.state = {
+      value: ''
+    }
+  }
+
+  handleInputChange = (ev) => {
+    console.log(ev.target.value) // 这里的Event对象是合成事件 SyntheticEvent 由React封装的
+    this.setState({
+      value: ev.target.value
+    })
+  }
+
+  render() {
+    return (
+      <div>
+        <input type="text" onChange={this.handleInputChange} />
+        <button onClick={this.getComponent}>getComponent</button>
+      </div>
+    )
+  }
+}
+```
+
+## React的高阶组件
+
+React Hooks更优秀
+
+## portals和fragment
+
+
+## StrictMode 严格模式
