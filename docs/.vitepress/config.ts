@@ -19,6 +19,7 @@ export default defineConfig({
         items: [
           { text: '超级剪贴板', link: '/project/ClipboardManager/' },
           { text: '超级Markdown', link: '/project/Markdown/' },
+          { text: '超级JavaScript', link: '/project/JSRunner/' },
           { text: '超级分词', link: '/project/SmartWordBreak/' }
         ]
       },
@@ -51,6 +52,7 @@ export default defineConfig({
         items: [
           { text: '超级剪贴板', link: '/project/ClipboardManager/' },
           { text: '超级Markdown', link: '/project/Markdown/' },
+          { text: '超级JavaScript', link: '/project/JSRunner/' },
           { text: '超级分词', link: '/project/SmartWordBreak/' }
         ]
       },
