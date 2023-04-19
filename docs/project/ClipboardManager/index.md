@@ -5,13 +5,13 @@ navbar: false
 
 <script setup>
   import url from './assets/logo.png'
-  import img1 from './assets/11.png'
-  import img2 from './assets/22.png'
-  import img3 from './assets/33.png'
-  import img4 from './assets/44.png'
-  import img5 from './assets/55.png'
-  import img6 from './assets/66.png'
-  import img7 from './assets/77.png'
+  import img1 from './assets/img1.png'
+  import img2 from './assets/img2.png'
+  import img3 from './assets/img3.png'
+  import img4 from './assets/img4.png'
+  import img5 from './assets/img5.png'
+  import img6 from './assets/img6.png'
+  import img7 from './assets/img7.png'
   const titleInfo = {
     subTitle: '✨ 强大的剪贴板管理工具。',
     logo: url,
@@ -53,7 +53,7 @@ navbar: false
 - ✅ 键盘 `←` `→`切换分类 `Tab`键连续切换分类
 - ✅ 使用 `Ctrl/Alt+数字键` 快速粘贴
 - ✅ 插件内`输入任意字母或数字`自动聚焦搜索框 支持使用`空格`同时检索**多个关键词**
-- ✅ **智慧分词** 快速拖选指定内容 **超级粘贴** 直接转存为文件
+- ✅ **超级Markdown**合并剪贴板内容导出图文 **超级粘贴** 直接转存为文件 **智慧分词** 快速拖选指定内容
 - ✅ 优雅的界面动效与交互 跟随系统的深色模式
 - ✅ 优秀的剪贴板监听性能 强大的自定义功能按钮 自搭建多端同步 ···
 
