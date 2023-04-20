@@ -13,6 +13,7 @@ navbar: false
     subTitle: '✨ JavaScript运行器 支持多种运行环境 快速验证代码逻辑',
     logo: url,
     linkList: [
+      { content: '🕶️ 在线体验', target: 'https://ziuchen.github.io/JSRunner' },
       { content: '🚚 更新日志', target: './log/' },
     ]
   }

@@ -12,6 +12,7 @@ navbar: false
     subTitle: '✨ 强大的Markdown编辑器',
     logo: url,
     linkList: [
+      { content: '🕶️ 在线体验', target: 'https://ziuchen.github.io/SuperMarkdown' },
       { content: '🚀 快捷键一览', target: './shortcut/' },
       { content: '🚚 更新日志', target: './log/' },
     ]
