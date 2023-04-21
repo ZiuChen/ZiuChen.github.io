@@ -144,7 +144,7 @@ root.render(<App />)
   - 当数据发生变化，可以调用 `this.setState` 来更新数据，通知React执行视图更新
   - update操作时，会重新调用render函数，使用最新的数据来渲染界面
 
-:::success
+::: tip
 需要注意的是，在constructor中我们调用了`super`，因为App类是继承自React.Component类，调用`super`即调用了其父类的构造函数，让我们的App组件可以继承一些内置属性/方法如`state setState render`
 :::
 
@@ -2487,6 +2487,8 @@ const CustomInput = forwardRef((props, ref) => {
 
 在React中，HTML表单的处理方式和普通DOM元素不太一样：表单通常会保存在一些内部的state中，并且根据用户的输入进行更新
 
+下例中创建了一个非受控组件，React只能被动从组件接受值并更新到state中，而无法主动更新组件的值
+
 ```tsx
 // Input.jsx
 import React, { PureComponent } from 'react'
@@ -2517,11 +2519,426 @@ export default class Input extends PureComponent {
 }
 ```
 
+我们对例子稍加改动，将组件的`value`属性设置为state中的值，从而实现受控组件。
+
+需要注意的是，绑定`value`属性的同时，我们也要绑定`onChange`事件，供用户输入时对state进行更新
+
+```tsx {8,22}
+// Input.jsx
+import React, { PureComponent } from 'react'
+
+export default class Input extends PureComponent {
+  constructor(props) {
+    super(props)
+    this.state = {
+      value: 'default Value'
+    }
+  }
+
+  handleInputChange = (ev) => {
+    this.setState({
+      value: ev.target.value
+    })
+  }
+
+  render() {
+    return (
+      <div>
+        <h2>currentValue: {this.state.value}</h2>
+        <input type="text" value={this.state.value} onChange={this.handleInputChange} />
+      </div>
+    )
+  }
+}
+```
+
+this.state.value默认值 => 渲染到Input标签内 => 用户输入 => 触发onChange事件 => 更新state => 渲染到Input标签内 => ...
+
+React要求我们要么指定`onChange`要么指定`readOnly`，只绑定`value`属性时，控制台会抛出错误
+
+### 使用受控组件的几个例子
+
+下例中分别使用`input`创建了几个受控组件，文本框、单选、多选
+
+```tsx
+import React, { PureComponent } from 'react'
+
+export default class Form extends PureComponent {
+  constructor(props) {
+    super(props)
+    this.state = {
+      username: 'ziu',
+      password: '123456',
+      isAgree: false,
+      hobbies: [
+        { value: 'sing', label: 'Sing', isChecked: false },
+        { value: 'dance', label: 'Dance', isChecked: false },
+        { value: 'rap', label: 'Rap', isChecked: false },
+        { value: 'music', label: 'Music', isChecked: false }
+      ],
+      fruits: ['orange']
+    }
+  }
+
+  handleInputChange = (ev, idx) => {
+    this.setState({
+      [ev.target.name]: ev.target.value
+    })
+  }
+
+  handleAgreeChange = (ev) => {
+    this.setState({
+      isAgree: ev.target.checked
+    })
+  }
+
+  handleHobbyChange = (ev, idx) => {
+    const hobbies = [...this.state.hobbies] // IMPORTANT
+    hobbies[idx].isChecked = ev.target.checked
+    this.setState({
+      hobbies
+    })
+  }
+
+  handleSelectChange = (ev) => {
+    this.setState({
+      fruits: [...ev.target.selectedOptions].map((opt) => opt.value)
+    })
+  }
+
+  handleSubmitClick = () => {
+    const { username, password, isAgree, hobbies, fruits } = this.state
+    console.log(
+      username,
+      password,
+      isAgree,
+      hobbies.filter((h) => h.isChecked).map((h) => h.value),
+      fruits
+    )
+  }
+
+  render() {
+    const { username, password, isAgree, hobbies, fruits } = this.state
+    return (
+      <div>
+        <input type="text" value={username} onChange={this.handleInputChange} />
+        <input type="password" value={password} onChange={this.handleInputChange} />
+        <div>
+          <label htmlFor="agree">
+            Agree
+            <input id="agree" type="checkbox" checked={isAgree} onChange={this.handleAgreeChange} />
+          </label>
+        </div>
+        <div>
+          Hobby:
+          {hobbies.map((hobby, idx) => (
+            <label key={idx} htmlFor={hobby.value}>
+              <input
+                id={hobby.value}
+                type="checkbox"
+                checked={hobby.isChecked}
+                onChange={(ev) => this.handleHobbyChange(ev, idx)}
+              />
+              {hobby.label}
+            </label>
+          ))}
+        </div>
+        <div>
+          <select value={fruits} onChange={this.handleSelectChange} multiple>
+            <option value="apple">Apple</option>
+            <option value="orange">Orange</option>
+            <option value="banana">Banana</option>
+          </select>
+        </div>
+        <div>
+          <button onClick={this.handleSubmitClick}>Submit</button>
+        </div>
+      </div>
+    )
+  }
+}
+```
+
+这里有一点小知识，关于可迭代对象，可以通过`Array.from`将可迭代对象转为数组
+
+方便我们使用数组的方法来操作选取的DOM列表
+
+简单做一下总结，如何在React中绑定受控组件：
+
+| Element | Value Property | Change Callback | New Value in Callback |
+| ------- | -------------- | --------------- | --------------------- |
+| `<input type="text">` | value | onChange | event.target.value |
+| `<input type="checkbox">` | checked | onChange | event.target.checked |
+| `<input type="radio">` | checked | onChange | event.target.checked |
+| `<textarea>` | value | onChange | event.target.value |
+| `<select>` | value | onChange | event.target.value |
+
+在大多数情况下我们都应该使用受控组件，来实时获取最新的组件状态，组件的状态也维护在React中
+
+如果要使用非受控组件来处理表单
+
+- 数据由DOM元素来处理
+- 给DOM节点传入`defaultValue`/`defaultChecked`来为其设置初始值
+- 监听`onChange`事件来获取最新的DOM状态
+
+本质上就是在操作DOM，而不是在操作React状态
+
 ## React的高阶组件
 
-React Hooks更优秀
+什么是高阶函数？
+
+- 接受一个或多个函数作为输入
+- 输出一个函数
+
+在之前的JS开发中我们经常遇到的几种高阶函数：`arr.map` `arr.filter` `arr.reduce` ...
+
+那么什么是高阶组件？
+
+- 高阶组件 Higher Order Components(HOC)
+- 高阶组件是参数为组件，返回值为新组件的函数
+
+在React中，高阶组件就是一个函数，**接受一个组件作为输入，输出一个新的组件**（随着React Hooks的出现，高阶组件的使用已经不是那么常见了）
+
+下面写一个高阶组件的例子：
+
+HelloWorld组件传入一个`name`属性，高阶组件`hoc`会在`HelloWorld`组件的基础上添加一个`name`属性，值为`additional-name-value`
+
+这里的`hoc`就是一个高阶组件，它接受一个组件`HelloWorld`作为输入，返回一个新的组件`NewHelloWorld`
+
+我们可以利用高阶组件来实现一些功能：
+
+- 代码复用
+- 渲染劫持
+- 状态抽象和变更监听
+
+```tsx
+import React, { Component } from 'react'
+
+function hoc(WrapperComponent) {
+  function NewCpn() {
+    return <WrapperComponent name="additional-name-value"></WrapperComponent>
+  }
+  return NewCpn
+}
+
+class HelloWorld extends Component {
+  render() {
+    return <div>hello {this.props.name}</div>
+  }
+}
+
+const NewHelloWorld = hoc(HelloWorld)
+
+export default class App extends Component {
+  render() {
+    return (
+      <div>
+        <NewHelloWorld></NewHelloWorld>
+      </div>
+    )
+  }
+}
+```
+
+- 高阶组件并不是React API的一部分，它是基于React的组合特性而形成的设计模式
+- 高阶组件在一些React第三方库中非常常见
+  - 比如Redux中的connect
+  - 比如React-Router中的withRouter
+
+### 高阶组件的应用场景（一）
+
+下面我们介绍一个高阶组件的适用场景：
+
+假设我们有userInfo中的若干数据：`{ isDarkMode: false, hasLogin: false }`，我们希望这些状态能够在若干组件中共享
+
+下例中我们实现了一个高阶函数`enhancedWithUserInfo`，所有传入它的组件都会被注入`userInfo`这个状态
+
+```tsx
+function enhancedWithUserInfo(oldComponent) {
+  class EnhancedComponent extends PureComponent {
+    constructor() {
+      super()
+      this.state = {
+        userInfo: {
+          isDarkMode: false,
+          hasLogin: false
+        }
+      }
+    }
+    render() {
+      return <oldComponent {...this.state.userInfo} />
+    }
+  }
+  return EnhancedComponent
+}
+```
+
+后续如果有其他组件希望能够共享`userInfo`这个状态时，只需要将其传入`enhancedWithUserInfo`：
+
+这样我们可以在组件中使用这个状态
+
+```tsx
+const NavTabWithUserInfo = enhancedWithUserInfo(
+  function NavTab(props) {
+    return (
+      <div>
+        isDarkMode: {props.isDarkMode.toString()}
+        hasLogin: {props.hasLogin.toString()}
+      </div>
+    )
+  }
+)
+```
+
+高阶组件结合Context，我们可以将原来`Context.Consumer`较为繁琐的用法变得十分简单：
+
+在没有高阶组件之前，要使用`Context`则不得不在每个要使用`Context`的组件中，通过`Context.Comsumer`将组件包裹
+
+我们可以封装一个高阶组件`enhanceWithContext`，在组件中统一使用`Context.Consumer`包裹组件，并将context中的状态注入到其中
+
+```tsx
+// enhanceWithContext.jsx
+function enhanceWithContext(OriginComponent) {
+  return (props) => {
+    return (
+      <DarkModeContext.Consumer>
+        {(context) => <OriginComponent {...context} {...props} />}
+      </DarkModeContext.Consumer>
+    )
+  }
+}
+```
+
+这样就可以更方便地使用`Context.Consumer`，此时context中的状态作为props传递给了低阶组件
+
+在低阶组件中可以很方便的从props中取出context中的状态：
+
+```tsx
+// App.jsx
+import { NavTabWithContext } from './component/NavTab'
+
+export default class App extends Component {
+  render() {
+    return (
+      <div>
+        <DarkModeContext.Provider>
+          <NavTabWithContext />
+        </DarkModeContext.Provider>
+      </div>
+    )
+  }
+}
+
+// NavTab.jsx
+export class NavTab extends PureComponent {
+  render() {
+    return (
+      <div>
+        <h1>NavTab</h1>
+        <p>DarkMode: {this.props.darkMode ? 'true' : 'false'}</p>
+      </div>
+    )
+  }
+}
+export const NavTabWithContext = enhanceWithContext(NavTab)
+```
+
+### 高阶组件的应用场景（二）
+
+假设我们需要计算组件的渲染时间，可以通过计算`UNSAFE_componentWillMount`和`componentDidMount`的执行时间差值，得到组件的渲染时间
+
+:::warn
+目前React已经不推荐在实际开发中使用`UNSAFE_componentWillMount`了
+:::
+
+下面展示了通过这种方式计算一个大列表的渲染时间的例子：
+
+```tsx
+class GiantList extends PureComponent {
+  constructor() {
+    super()
+    this.state = {
+      list: new Array(100).fill('item')
+    }
+  }
+
+  UNSAFE_componentWillMount() {
+    this.beginRender = new Date().getTime()
+  }
+
+  componentDidMount() {
+    const renderInterval = new Date().getTime() - this.beginRender
+    console.log('renderInterval', renderInterval)
+  }
+
+  render() {
+    return (
+      <div>
+        <ul>
+          {this.state.list.map((item, idx) => (
+            <li key={idx}>{item}</li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+}
+```
+
+我们可以借助高阶组件，将计算渲染时间的能力抽离出来，让我们更方便的在项目中使用：
+
+如果要为组件增强计算渲染时间的能力，只需要将其传入`enhanceRenderInterval`函数即可
+
+```tsx
+// enhanceRenderInterval.jsx
+export function enhanceRenderInterval(WrappedComponent) {
+  return class extends WrappedComponent {
+    UNSAFE_componentWillMount() {
+      this.beginRender = new Date().getTime()
+    }
+
+    componentDidMount() {
+      const renderInterval = new Date().getTime() - this.beginRender
+      // class/function component both has `name` property
+      console.log(WrappedComponent.name, 'renderInterval', renderInterval)
+    }
+  }
+}
+
+// List.jsx
+const ListWithEnhanceRenderInterval = enhanceRenderInterval(
+  class List extends PureComponent {
+    render() {
+      return (
+        <ul>
+          {Array.from({ length: 100 }).map((_, index) => (
+            <li key={index}>{index}</li>
+          ))}
+        </ul>
+      )
+    }
+  }
+)
+```
+
+- 这里使用到了组件的`.name`属性，这并不是React提供的API，而是原生JS的特性，类和函数都有这样一个`name`属性
+- 这里封装的高阶组件由于用到了生命周期，所以只适用于类组件，对于函数式组件，有Hooks的实现方案
+
+在历史上React也使用过Mixin作为代码复用的解决方案，但是Mixin会导致一系列的问题：
+
+- Mixin之间可能会相互依赖、相互耦合，不利于代码维护
+- 不同的Mixin中的变量/方法会发生冲突
+- 多个Mixin混入在一起时，组件内部状态会变得更复杂，往往导致牵一发而动全身，使组件难以维护
+
+利用高阶组件，可以针对某些需要高频使用的React代码进行高效的复用，但是HOC也有一些缺陷：
+
+- HOC需要在原组件上进行包裹或嵌套，如果大量使用HOC，会产生很多嵌套关系，让调试变得复杂
+- HOC可以劫持props，但在不遵守约定的情况下也可能造成冲突
+
+在React18推出的Hooks是开创性的，它解决了之前代码复用存在的很多问题，后续会介绍
+
+Mixin已经基本不再适用，现代开发基本采用Hooks，部分老代码还在使用高阶组件（`connect()()`）
 
 ## portals和fragment
-
 
 ## StrictMode 严格模式
