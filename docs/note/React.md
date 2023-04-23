@@ -2745,7 +2745,7 @@ export default class App extends Component {
   - 比如Redux中的connect
   - 比如React-Router中的withRouter
 
-### 高阶组件的应用场景（一）
+### 使用高阶组件简化Context使用
 
 下面我们介绍一个高阶组件的适用场景：
 
@@ -2843,7 +2843,7 @@ export class NavTab extends PureComponent {
 export const NavTabWithContext = enhanceWithContext(NavTab)
 ```
 
-### 高阶组件的应用场景（二）
+### 使用高阶组件计算渲染时间
 
 假设我们需要计算组件的渲染时间，可以通过计算`UNSAFE_componentWillMount`和`componentDidMount`的执行时间差值，得到组件的渲染时间
 
@@ -2939,6 +2939,424 @@ const ListWithEnhanceRenderInterval = enhanceRenderInterval(
 
 Mixin已经基本不再适用，现代开发基本采用Hooks，部分老代码还在使用高阶组件（`connect()()`）
 
-## portals和fragment
+### 使用高阶组件转发ref
+
+- 在前面的章节中我们说过：函数式组件不能使用ref来获取DOM
+- 因为函数式组件没有实例，所以不能获取到对应组件的对象
+
+但是在开发中我们遇到需要获取函数式组件中某个元素的DOM的需求时，可以利用高阶组件来解决：
+
+通过`forwardRef`高阶函数对ref进行转发：
+
+```tsx
+const Home = forwardRef(function(props, ref) {
+  return (
+    <div>
+      <h2 ref={ref}> Home </h2>
+      <p> Some other elements. </p>
+    </div>
+  )
+})
+```
+
+`forwardRef`这个API本质上就是一个高阶组件，接收一个函数式组件，返回一个新的组件
+
+- 用于转发ref，获取函数式组件的DOM节点
+- 它只能接受函数式组件，不能接收类组件
+
+## Portals和Fragment
+
+### Portals
+
+我们希望子组件渲染到其他位置，而保持Element与当前组件的上下文，可以使用`createPortal`这个API
+
+- 接收参数1：渲染到容器中的React Element子元素（元素节点/字符串/Fragment）
+- 接收参数2：目标容器的DOM节点
+- 返回`ReactPortal`类型的React Element节点
+  - 增加了`key`与`children`属性
+
+```tsx
+// App.jsx
+import React, { Component, PureComponent } from 'react'
+import { createPortal } from 'react-dom'
+
+class Modal extends PureComponent {
+  render() {
+    return createPortal(this.props.children, document.body)
+  }
+}
+
+export default class App extends Component {
+  render() {
+    return (
+      <div>
+        <Modal>
+          <h1>Modal Title</h1>
+          <p>Modal Content</p>
+        </Modal>
+      </div>
+    )
+  }
+}
+```
+
+### Fragment
+
+React要求每个组件必须有唯一根节点，在之前的开发中，如果需要渲染多个元素，我们不得不在根节点包裹一个`div`
+
+然而某些情况下会导致DOM节点的冗余，可以使用Fragment包裹组件，来优化DOM节点数量
+
+- Fragment意味片段，是一系列React Element的组合
+- Fragment创建的是虚拟的VDOM节点，不会被渲染为真实DOM
+- Fragment只能传入`key`或`children`作为props，其他的props会被忽略（如className）
+- 类似于Vue3中的Fragments
+
+```tsx
+import React, { Component, PureComponent, Fragment } from 'react'
+
+class MultiElementCpn extends PureComponent {
+  render() {
+    return (
+      // Fragment is a component that can be used to wrap multiple elements
+      // It can be used to wrap multiple elements without adding extra nodes to the DOM
+      // Here, className will NOT be added to the DOM
+      // Only `key` or `children` props can owned by Fragment
+      <Fragment className="test">
+        <h1>Some Title</h1>
+        <p>Some Content</p>
+        <div>
+          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam</p>
+        </div>
+      </Fragment>
+    )
+  }
+}
+
+export default class App extends Component {
+  render() {
+    return (
+      <div>
+        <MultiElementCpn></MultiElementCpn>
+      </div>
+    )
+  }
+}
+```
+
+Fragment有一种语法糖写法：`<> ... </>`
+
+- 没有标签名的空标签，可以被直接编译为Fragment
+- 但是，在列表渲染时如果需要绑定key，必须完整书写Fragment，不能省略
+
+```tsx {16,19}
+export default class App extends Component {
+  constructor() {
+    super()
+    this.state = {
+      list: [
+        { id: 1, name: 'Jack', age: 18 },
+        { id: 2, name: 'Rose', age: 20 },
+        { id: 3, name: 'Tom', age: 22 }
+      ]
+    }
+  }
+  render() {
+    return (
+      this.state.list.map((item) => {
+        return (
+          <>
+            <span>{item.name}</span>
+            <span>{item.age}</span>
+          </>
+        )
+      })
+    )
+  }
+}
+```
+
+```tsx{5,8}
+...
+  render() {
+    return this.state.list.map((item) => {
+      return (
+        <Fragment key={item.id}>
+          <span>{item.name}</span>
+          <span>{item.age}</span>
+        </Fragment>
+      )
+    })
+  }
+...
+```
 
 ## StrictMode 严格模式
+
+StrictMode是一个用来突出显示应用程序中潜在问题的工具
+
+- 与Fragment一样，StrictMode不会渲染任何可见的UI
+- 它为其后代元素触发额外的检查与警告
+- 严格模式检查仅在开发模式下运行，不会影响生产构建
+
+可以为应用程序的任何部分启用严格模式，例如：
+
+- 不会对Header和Footer组件运行严格检查模式
+- 可以对Card组件、UserInfo组件及它们的所有后代元素都进行检查
+
+当然，一般情况下`<StrictMode>`都会将整个App包裹，以便更早的发现程序中的问题：
+
+- 识别不安全的生命周期 如`UNSAFE_componentWillMount`等
+  - > Warning: Using UNSAFE_componentWillMount in strict mode is not recommended and may indicate bugs in your code. See https://reactjs.org/link/unsafe-component-lifecycles for details.
+- 使用过时的ref API
+  - > Warning: A string ref, "title", has been found within a strict mode tree. String refs are a source of potential bugs and should be avoided. We recommend using useRef() or createRef() instead. Learn more about using refs safely here: https://reactjs.org/link/strict-mode-string-ref
+- 检查意外的副作用
+  - 组件的constructor会被调用两次
+  - 这是严格模式下故意进行的操作，让你来查看这里写的一些逻辑代码被调用多次时是否会产生一些副作用
+  - 在生产环境中，是不会被调用两次的
+  - React18之后 如果安装了React Devtool浏览器插件，第二次执行的日志输出会是灰色的
+- 使用了废弃的API 如`findDOMNode`
+  - 可以直接找到组件的根DOM节点 `const root = findDOMNode(component)`
+- 检测过时的context api
+  - 早期的Context是通过static属性声明Context对象属性
+  - 通过getChildContext返回Context对象等方式使用Context的
+  - 目前这种方式已经不推荐使用
+
+```tsx
+import React, { Component, PureComponent, StrictMode } from 'react'
+
+class UserInfo extends PureComponent {
+  UNSAFE_componentWillMount() {
+    console.log('UserInfo', 'componentWillMount')
+  }
+
+  componentDidMount() {
+    console.log('UserInfo', 'componentDidMount')
+  }
+
+  render() {
+    console.log('UserInfo', 'render')
+    return (
+      <div>
+        <h1>UserInfo</h1>
+        <h2 ref="title">Test Title</h2>
+      </div>
+    )
+  }
+}
+
+export default class App extends Component {
+  render() {
+    return (
+      <div>
+        <StrictMode>
+          <UserInfo></UserInfo>
+        </StrictMode>
+      </div>
+    )
+  }
+}
+```
+
+## React过渡动画实现
+
+- React的过渡动画
+- CSSTransition的使用
+- 常见的属性设置
+- SwitchTransition
+- TransitionGroup
+
+### CSSTransition
+
+由社区实现的transition动画库`react-transition-group`
+
+```bash
+npm install react-transition-group
+```
+
+- 本质上就是帮你维护了一系列的transition动画类
+- CSSTransition的执行过程中有三种状态：`appear` `enter` `exit`
+- 需要在CSS代码中为不同状态的类绑定样式
+  - 开始状态 `xxx-appear` `xxx-enter` `xxx-exit`
+  - 动画进行 `xxx-appear-active` `xxx-enter-active` `xxx-ext-active`
+  - 动画结束 `xxx-appear-done` `xxx-enter-done` `xxx-exit-done`
+
+下例中，点击按钮将切换h1的展示状态
+
+```tsx {22-26}
+// App.jsx
+import React, { PureComponent } from 'react'
+import { CSSTransition } from 'react-transition-group'
+import './styles/index.css'
+
+export default class App extends PureComponent {
+  constructor() {
+    super()
+    this.state = {
+      show: true
+    }
+  }
+  toggle = () => {
+    this.setState({
+      show: !this.state.show
+    })
+  }
+  render() {
+    return (
+      <div>
+        <CSSTransition
+          in={this.state.show}
+          timeout={200}
+          classNames="emerge"
+          unmountOnExit
+          appear={true}
+        >
+          <h1>hello</h1>
+        </CSSTransition>
+        <button onClick={this.toggle}>Toggle</button>
+      </div>
+    )
+  }
+}
+```
+
+```css
+.emerge-enter {
+  opacity: 0;
+}
+
+.emerge-enter-active {
+  opacity: 1;
+  transition: opacity 0.2s;
+}
+
+.emerge-exit {
+  opacity: 1;
+}
+
+.emerge-exit-active {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+```
+
+CSSTransition常用的属性：
+
+- `in` 布尔值
+  - 展示/隐藏的触发器
+  - 如果添加了`unmountOnExit`属性，则组件会在退出动画结束后从DOM树上摘除
+  - `in === true` 触发进入状态 依次添加下面的类名：
+    - `xxx-enter`
+    - `xxx-enter-active`
+    - `xxx-enter-done`
+  - `in === false` 触发退出状态 依次添加下面的类名：
+    - `xxx-exit`
+    - `xxx-exit-active`
+    - `xxx-exit-done`
+- `classNames` 动画名称
+- `timeout` 过渡动画时间
+  - 应当与`transition`中动画执行时间保持一致
+  - `timeout`属性决定了由CSSTransition维护的类名移除的时机
+  - 而`transition`中的时间则决定了动画执行的持续时间
+- `appear`组件第一次渲染时是否添加动画
+  - 需要在CSS中指定`xxx-active`的类名动画
+- JavaScript钩子
+  - `onEnter` `onEntering` `onEntered` ...
+
+### SwitchTransition
+
+SwitchTransition可以完成两个组件之间切换的动画
+
+- 例如一个按钮需要在ON与OFF之间切换
+  - ON从左侧退出，OFF从右侧进入
+- 这样的动画在VueTransitionAPI中我们使用`mode`指定
+- 在React中使用`SwitchTransition`来实现
+
+，下面是一个按钮切换效果，模式是先出后进：
+
+```tsx
+// App.jsx
+import React, { PureComponent } from 'react'
+import { CSSTransition, SwitchTransition } from 'react-transition-group'
+import './styles/index.css'
+
+export default class App extends PureComponent {
+  constructor() {
+    super()
+    this.state = {
+      status: true
+    }
+  }
+  toggle = () => {
+    this.setState({
+      status: !this.state.status
+    })
+  }
+  render() {
+    return (
+      <div>
+        {/* <button onClick={this.toggle}>{this.state.status ? 'ON' : 'OFF'}</button> */}
+        <SwitchTransition mode="out-in">
+          <CSSTransition key={this.state.status ? 'on' : 'off'} classNames="emerge" timeout={200}>
+            <button key={this.state.status ? 'on' : 'off'} onClick={this.toggle}>
+              {this.state.status ? 'ON' : 'OFF'}
+            </button>
+          </CSSTransition>
+        </SwitchTransition>
+      </div>
+    )
+  }
+}
+```
+
+SwitchTransition中的属性 `mode`支持两种模式：
+
+- `out-in` 旧组件先退出，新组件后进入，常用
+- `in-out` 新组件先进入，旧组件后退出
+
+- 不能直接包裹待添加动画的元素
+- 需要结合CSSTransition来实现，且不能给CSSTransition设置`in`属性，而是要绑定`key`属性
+
+### TransitionGroup
+
+```tsx
+// App.jsx
+import React, { PureComponent } from 'react'
+import { CSSTransition, TransitionGroup } from 'react-transition-group'
+import './styles/index.css'
+
+export default class App extends PureComponent {
+  constructor() {
+    super()
+    this.state = {
+      danmakus: []
+    }
+  }
+  addDanmaku = () => {
+    const danmaku = {
+      id: Date.now(),
+      content: '弹幕' + Date.now()
+    }
+    this.setState({
+      danmakus: [...this.state.danmakus, danmaku]
+    })
+  }
+  render() {
+    return (
+      <div>
+        <button onClick={this.addDanmaku}>ADD</button>
+        <TransitionGroup>
+          {this.state.danmakus.map((item, index) => {
+            return (
+              <CSSTransition key={item.id} classNames="emerge" timeout={200}>
+                <div key={item.id}>
+                  <span>{item.content}</span>
+                </div>
+              </CSSTransition>
+            )
+          })}
+        </TransitionGroup>
+      </div>
+    )
+  }
+}
+```
