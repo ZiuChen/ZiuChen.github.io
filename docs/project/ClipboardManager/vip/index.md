@@ -63,7 +63,7 @@
 
 相关链接：
 
-- [Teracloud](https://teracloud.jp/en/) （国内可用 无限制）
+- [Infini Cloud](https://infini-cloud.net/en/) （国内可用 无限制）
 - [坚果云 WebDav](https://help.jianguoyun.com/?tag=webdav)（国内可用 限制调用次数）
 - [2022年还有哪些支持WebDAV的网盘？](https://www.zhihu.com/question/347182171)
 
