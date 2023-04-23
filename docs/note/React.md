@@ -3360,3 +3360,302 @@ export default class App extends PureComponent {
   }
 }
 ```
+
+## React CSS方案
+
+- React中的CSS概述
+- 内联样式CSS
+- 普通CSS文件
+- CSS Modules
+- CSS in JS
+- classnames
+
+### Inline Style
+
+内联样式
+
+- style属性接受一个采用小驼峰格式作为属性的JS对象
+- 可以引用外部变量作为值
+
+内联样式的优点
+
+- 样式内联 不会有冲突
+- 可以动态获取state中的状态设置样式
+
+内联样式的缺点
+
+- 写法全部需要小驼峰
+  - `font-size` => `fontSize`
+- 样式代码提示缺失
+- 样式与结构耦合 逻辑混乱
+- 无法添加伪类、伪元素的样式
+- 优先级问题 外部覆写只能用`!important`
+
+```tsx
+// App.jsx
+export default class App extends PureComponent {
+  constructor() {
+    super()
+    this.state = {
+      color: 'red'
+    }
+  }
+  render() {
+    const { color } = this.state
+    return (
+      <div>
+        <h1>React App</h1>
+        <div
+          style={{
+            width: '100px',
+            color: color
+          }}
+        >
+          Hello, World!
+        </div>
+      </div>
+    )
+  }
+}
+```
+
+### Normal CSS
+
+直接通过`import`引入CSS文件，CSS文件中的样式将被注入到head标签，**全局生效**
+
+在JSX中编写与CSS文件相对应的选择器，以便样式能够正确被应用
+
+```tsx
+import './styles/index.css'
+
+// some JSX expression ...
+```
+
+### CSS Modules
+
+CSS Modules不是React特有的解决方案，而是所有使用了类似于Webpack配置的环境都可以使用的
+
+`webpack.config.js modules: true`
+
+React的脚手架内置了CSS Modules的配置
+
+- `css/less/scss`等样式文件都需要添加`.module`的后缀：
+- `xxx.module.css` `xxx.module.less` `xxx.module.scss`
+- 随后就可以在其他文件导入并使用
+
+```tsx
+// App.jsx
+import React, { PureComponent } from 'react'
+import navbarStyle from './styles/navbar.module.css'
+
+export default class App extends PureComponent {
+  render() {
+    return (
+      <div className={navbarStyle.navbar}>
+        <h1>React App</h1>
+        <div>
+          <span className={navbarStyle.navbarItem}>Hello, World!</span>
+        </div>
+      </div>
+    )
+  }
+}
+```
+
+```css
+/* navbar.module.css */
+.navbar {
+  color: red;
+}
+
+.navbarItem {
+  color: blue;
+}
+```
+
+本质上是将CSS文件编译为了一个JS对象，从其他模块导入CSS Modules时，导入的是一个JS对象
+
+通过从模块中取key值，即可获得经过处理的类名，这个类名与最终插入到head标签中的真实CSS选择器相对应
+
+类名一般由：`[filename]_[classname]__[hash]`组成，保证局部性、唯一性
+
+CSS Modules的缺点
+
+- 引用的类名不能使用连接符`-`，如果使用了会被编译器自动忽略
+- 所有的className必须使用`styleModule.className`来获取
+- 动态样式不方便修改，仍然需要搭配内联样式
+
+### CSS in JS
+
+Strongly Recommand.
+
+- All in JS
+- CSS-in-JS是一种模式：CSS由JavaScript生成，而不是从外部文件定义
+- 功能不是React的一部分，而是第三方库实现的
+
+- 可以通过JavaScript为CSS赋予一些能力
+- 像CSS预处理器一样的样式嵌套、函数定义、逻辑复用、动态样式等
+- 样式状态与组件状态保持一致，动态获取JS状态
+
+目前较为流行的CSS in JS的第三方库
+
+- `styled-components`
+- `emotion`
+- `glamorous`
+
+```bash
+npm i styled-components
+```
+
+#### ES6 标签模板字符串
+
+模板字符串将被动态参数截取，并作为参数传递给函数，此时函数调用的括号可以省略
+
+```ts
+function foo(...args) {
+  console.log(args)
+}
+
+const name = 'Ziu'
+const age = 18
+
+// foo('Ziu', 18)
+foo`my name is ${name}, age is ${age}`
+```
+
+- 正常情况下我们都是通过`func()`的方式调用的
+- 除此之外，我们还可以通过另一种方式调用
+
+我们在调用时插入了其他变量
+
+- 模板字符串被拆分了
+- 第一个元素是数组，是被模板字符串拆分的字符串组合
+- 后面的元素是一个个模板字符串传入的内容
+
+#### Styled Components初体验
+
+- styled-component的本质是通过函数的调用，最终**创建出一个组件**
+- 这个组件会被添加上一个唯一的className
+- 这个唯一的className与最终插入到head标签中的真实CSS选择器相对应
+
+除此之外，它支持类似于CSS预处理器一样的样式嵌套：
+
+- 直接子代选择器或后代选择器
+- 通过`&`符号获取当前元素
+- 直接伪类选择器、伪元素等
+
+搭配VSCode拓展`vscode styled components`，可以在模板字符串中编写CSS时获得高亮与代码提示
+
+```tsx {3,8,13}
+// App.jsx
+import React, { PureComponent } from 'react'
+import { AppWrapper } from './styles/style'
+
+export default class App extends PureComponent {
+  render() {
+    return (
+      <AppWrapper>
+        <h1 className="title">React App</h1>
+        <div className="nav-bar">
+          <span className="nav-bar-item">Hello, World!</span>
+        </div>
+      </AppWrapper>
+    )
+  }
+}
+```
+
+```ts
+// style.js
+import styled from 'styled-components'
+
+export const AppWrapper = styled.div`
+  .title {
+    font-size: 1.5em;
+    text-align: center;
+  }
+
+  .nav-bar {
+    width: 100px;
+    text-align: center;
+
+    .nav-bar-item {
+      color: blue;
+
+      &:hover {
+        color: red;
+      }
+    }
+  }
+`
+```
+
+### 进阶用法
+
+由于本质上是方法调用，返回的内容本质上是一个组件，我们可以通过给组件传值，很方便的实现动态样式绑定：
+
+点击按钮动态修改样式的值
+
+```tsx
+// App.jsx
+import React, { PureComponent } from 'react'
+import { AppWrapper } from './styles/style'
+
+export default class App extends PureComponent {
+  constructor() {
+    super()
+    this.state = {
+      color: 'blue',
+      hoverColor: 'red',
+      size: 1.5
+    }
+  }
+  setColor = () => {
+    this.setState({
+      ...this.state,
+      color: this.state.color === 'blue' ? 'green' : 'blue'
+    })
+  }
+  render() {
+    const { color, hoverColor, size } = this.state
+
+    return (
+      <AppWrapper color={color} hoverColor={hoverColor} size={size}>
+        <h1 className="title">React App</h1>
+        <div className="nav-bar">
+          <span className="nav-bar-item">Hello, World!</span>
+        </div>
+        <button onClick={this.setColor}>Set Color</button>
+      </AppWrapper>
+    )
+  }
+}
+```
+
+```ts
+// style.js
+import styled from 'styled-components'
+
+export const AppWrapper = styled.div`
+  .title {
+    font-size: ${(props) => props.size}em;
+    text-align: center;
+  }
+
+  .nav-bar {
+    width: 100px;
+    text-align: center;
+
+    .nav-bar-item {
+      color: ${(props) => props.color};
+
+      &:hover {
+        color: ${(props) => props.hoverColor};
+      }
+    }
+  }
+`
+```
+
+### classnames
+
