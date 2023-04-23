@@ -14,6 +14,7 @@ navbar: false
     logo: url,
     linkList: [
       { content: '🕶️ 在线体验', target: 'https://ziuchen.github.io/JSRunner' },
+      { content: '👨🏻‍💻 开源地址', target: 'https://github.com/ZiuChen/JSRunner' },
       { content: '🚚 更新日志', target: './log/' },
     ]
   }
