@@ -13,13 +13,22 @@ hero:
     text: View on GitHub
     link: https://github.com/ZiuChen
 features:
-  - icon: 🎓
-    title: Electronic Information Major
-    details: 电子信息工程
-  - icon: 🎯
-    title: JavaScript & TypeScript
-    details: 自学前端 热爱技术
-  - icon: 👆
-    title: See more information
-    details: 访问导航栏查看更多信息
+  - icon: 📋
+    title: Clipboard Manager
+    details: A Powerful clipboard management tool
+  - icon: ✍🏻
+    title: Super Markdown
+    details: Powerful Markdown editor
+  - icon: 🚗
+    title: JS Runner
+    details: Run JavaScript dynamicly in Browser/Node.js
+  - icon: 🔑
+    title: Bytemd Plugin
+    details: Bytemd Plugin Library
+  - icon: 🍬
+    title: ASOUL Browser Pet
+    details: Keep an A-SOUL member as a pet in your browser
+  - icon: 🔧
+    title: Typein
+    details: Typein text, quickly perform browser operations
 ---
