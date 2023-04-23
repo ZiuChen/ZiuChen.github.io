@@ -13,6 +13,7 @@ navbar: false
     logo: url,
     linkList: [
       { content: '🕶️ 在线体验', target: 'https://ziuchen.github.io/SuperMarkdown' },
+      { content: '👨🏻‍💻 开源地址', target: 'https://github.com/ZiuChen/SuperMarkdown' },
       { content: '🚀 快捷键一览', target: './shortcut/' },
       { content: '🚚 更新日志', target: './log/' },
     ]
