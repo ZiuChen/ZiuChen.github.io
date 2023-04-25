@@ -3594,11 +3594,11 @@ export const AppWrapper = styled.div`
 
 由于本质上是方法调用，返回的内容本质上是一个组件，我们可以通过给组件传值，很方便的实现动态样式绑定：
 
-点击按钮动态修改样式的值
+点击按钮动态修改样式的值：
 
 ```tsx
 // App.jsx
-import React, { PureComponent } from 'react'
+import React, { PureComponent } from 'react'··
 import { AppWrapper } from './styles/style'
 
 export default class App extends PureComponent {
@@ -3657,5 +3657,457 @@ export const AppWrapper = styled.div`
 `
 ```
 
+我们之前演示过，标签模板字符串中通过`${ ... }`动态插入的变量会作为参数，当函数调用时传递给函数
+
+创建组件时动态传入的这些函数，当props发生变化时，就会在`div`函数中被再次调用，生成新的样式并应用到页面中
+
+### styled高级特性
+
+- 支持样式的继承
+- 支持设置主题
+
+```tsx
+// 样式继承
+const BasicButton = styled.button`
+  padding: 8px 30px;
+  border-radius: 5px
+`
+
+const WarnButton = styled(BasicButton)`
+  background-color: orange;
+  color: white;
+`
+```
+
+```tsx
+import { ThemeProvider } from 'styled-components'
+...
+  <ThemeProvider
+    theme={{
+      color,
+      hoverColor,
+      size
+    }}
+  >
+    ...
+  </ThemeProvider>
+...
+```
+
 ### classnames
+
+动态绑定className，如果没有`classnames`库，我们常常写这样的代码来动态绑定className：
+
+```tsx
+const classList = ['item', this.state.isActive ? 'item-active' : '']
+const className = classList.join(' ')
+
+// or
+const className = `item ${this.state.isActive ? 'item-active' : ''}`
+
+// or
+const classNameMap = {
+  'item': true,
+  'item-active': this.state.isActive
+}
+const className = Object.entries(classNameMap).map(item => !!item[1] ? item[0] : '').join(' ')
+```
+
+手动编写动态绑定的className较为繁琐，可以依靠第三方库`classnames`帮我们完成（Vue已将类似的功能内置）
+
+```bash
+npm i classnames
+```
+
+Usage Sample:
+
+```tsx
+classNames('foo', 'bar')
+classNames('foo', { bar: true })
+classNames(...['foo', 'bar'])
+```
+
+## Redux
+
+- Redux的核心思想
+- Redux的基本使用
+- React结合Redux
+- Redux的异步操作
+- redux-devtool
+- reducer的模块拆分
+
+### 理解JavaScript的纯函数
+
+- 函数式编程中有一个非常重要的概念 **纯函数**，JavaScript符合函数式编程的范式，所以也有纯函数的概念
+  - 在React开发中，纯函数被多次提及：
+  - React组件被要求像一个纯函数（为什么是像，因为还有类组件）
+  - Redux中有一个reducer的概念，同样是要求必须是一个纯函数
+- 掌握纯函数对于理解很多框架的设计都是有帮助的
+
+一个纯函数必然具备以下特征：
+
+- 确定的输入一定产生确定的输出
+- 函数的执行过程中，不能产生副作用
+
+
+### 为什么需要Redux
+
+- JS需要管理的状态越来越多，越来越复杂
+- 状态不断发生变化之间又相互依赖，这要求视图层也能同步更新
+- React提供了自动更新视图的方法，但状态仍需要手动管理
+- Redux可以帮我们管理状态，提供了**可预测的状态管理**
+- 框架无关，体积只有2KB大小
+
+### Redux的核心理念
+
+Redux的核心理念 Store
+
+- 定义一个统一的规范来操作数据，这样就可以做到对数据的跟踪
+- `list.push()` `list[0].age = 18`
+
+Redux的核心理念 Action
+
+- Redux要求：要修改数据，必须通过Action来修改
+- 所有数据的变化，必须通过派发（Patch）Action来更新
+- Action是一个普通的JS对象，用来描述此次更新的type与content
+- `const action = { type: 'ADD_ITEM', item: { name: 'Ziu', age: 18 } }`
+
+Redux的核心理念 Reducer
+
+- 如何将Store和Action联系在一起？
+- reducer是一个纯函数
+- 完成的工作就是：将传入的state和action结合起来，生成一个新的state
+- `patch` => `reducer` => `newState` => `Store`
+
+### Redux Demo
+
+下例中，通过`createStore`创建了一个Store（已经不推荐了）
+
+- initialState用于在调用`createStore`时作为默认值传入`reducer`
+- 后续每次`store.dispatch`都会调用`reducer`
+- 通过`reducer`更新state中的数据
+
+在React中，可以通过`store.subscribe`注册State变化的监听回调
+
+- 当state发生变化时，通过调用`this.forceUpdate`触发组件的更新
+- 一般情况下，我们在`componentDidMount`注册监听回调，在`componentWillUnmount`解除监听
+
+::: code-group
+```tsx [App.jsx]
+// App.jsx
+import React, { PureComponent } from 'react'
+import store from './store'
+
+export default class App extends PureComponent {
+  componentDidMount() {
+    // Subscribe to the store
+    store.subscribe(() => {
+      console.log('subscribe', store.getState())
+      this.forceUpdate()
+    })
+  }
+
+  componentWillUnmount() {
+    store.unsubscribe()
+  }
+
+  render() {
+    return (
+      <div>
+        <h1>App</h1>
+        <p>Count: {store.getState().count}</p>
+        <p>Name: {store.getState().name}</p>
+        <button onClick={() => store.dispatch({ type: 'INCREMENT' })}> +1 </button>
+        <button onClick={() => store.dispatch({ type: 'DECREMENT' })}> -1 </button>
+        <button onClick={() => store.dispatch({ type: 'CHANGE_NAME', name: 'ZIU' })}>
+          {' '}
+          CHANGE_NAME{' '}
+        </button>
+      </div>
+    )
+  }
+}
+```
+```tsx [index.js]
+// store/index.js
+import { createStore } from 'redux'
+
+// The initial application state
+// This is the same as the state argument we passed to the createStore function
+const initialState = {
+  count: 0,
+  name: 'Ziu'
+}
+
+// Reducer: a pure function that takes the previous state and an action, and returns the next state.
+// (previousState, action) => newState
+function reducer(state = initialState, action) {
+  console.log('reducer', state, action)
+
+  switch (action.type) {
+    case 'INCREMENT':
+      // NOTE: Keep functions pure - do not mutate the original state.
+      // Desctructure the state object and return a **new object** with the updated count
+      // Instead of `return state.count++`
+      return {
+        ...state,
+        count: state.count + 1
+      }
+    case 'DECREMENT':
+      return {
+        ...state,
+        count: state.count - 1
+      }
+    case 'CHANGE_NAME':
+      return {
+        ...state,
+        name: action.name
+      }
+    default:
+      return state
+  }
+}
+
+const store = createStore(reducer)
+
+export default store
+```
+:::
+
+### 进一步封装
+
+可以将耦合在一起的代码拆分到不同文件中
+
+- 将`reducer`抽取出来`reducer.js`，简化`store/index.js`内容
+- 将`action.type`抽取为常量`constants.js`，使用时做导入，以保证一致性
+- 将`action`抽取出来`actionFactory.js`，用于外部dispatch时规范类型
+
+::: code-group
+```tsx [index.js]
+// store/index.js
+import { createStore } from 'redux'
+import reducer from './reducer'
+
+const store = createStore(reducer)
+
+export default store
+```
+```tsx [constants.js]
+// constants.js
+export const INCREMENT = 'INCREMENT'
+export const DECREMENT = 'DECREMENT'
+export const CHANGE_NAME = 'CHANGE_NAME'
+```
+```tsx [reducer.js]
+// reducer.js
+import * as actionType from './constants'
+
+const initialState = {
+  count: 0,
+  name: 'Ziu'
+}
+
+export default function reducer(state = initialState, action) {
+  switch (action.type) {
+    case actionType.INCREMENT:
+      return {
+        ...state,
+        count: state.count + 1
+      }
+    case actionType.DECREMENT:
+      return {
+        ...state,
+        count: state.count - 1
+      }
+    case actionType.CHANGE_NAME:
+      return {
+        ...state,
+        name: action.name
+      }
+    default:
+      return state
+  }
+}
+```
+```tsx [actionFactory.js]
+// actionFactory.js
+import * as actionType from './constants'
+
+export const increment = () => ({
+  type: actionType.INCREMENT
+})
+
+export const decrement = () => ({
+  type: actionType.DECREMENT
+})
+
+export const changeName = (name) => ({
+  type: actionType.CHANGE_NAME,
+  name
+})
+```
+:::
+
+```tsx
+// App.jsx
+import React, { PureComponent } from 'react'
+import store from './store'
+import { increment, decrement, changeName } from './store/actionFactory'
+
+export default class App extends PureComponent {
+  componentDidMount() {
+    store.subscribe(() => this.forceUpdate())
+  }
+  componentWillUnmount() {
+    store.unsubscribe()
+  }
+  render() {
+    return (
+      <div>
+        <h1>App</h1>
+        <p>Count: {store.getState().count}</p>
+        <p>Name: {store.getState().name}</p>
+        <button onClick={() => store.dispatch(increment())}> +1 </button>
+        <button onClick={() => store.dispatch(decrement())}> -1 </button>
+        <button onClick={() => store.dispatch(changeName('ZIU'))}>CHANGE_NAME</button>
+      </div>
+    )
+  }
+}
+```
+
+### Redux的三大原则
+
+单一数据源
+
+- 整个应用程序的状态都被存储在一棵Object Tree上
+- 且这个Object Tree只存储在一个Store中
+- 但Redux并不强制限制创建多Store，不利于数据维护
+- 单一数据源有利于整个应用程序的维护、追踪、修改
+
+State属性是只读的
+
+- 允许修改State的方法只有patch action，不要直接修改State
+- 确保了View或网络请求都不能修改State
+- 保证所有的修改都能被追踪、按照严格的顺序执行，不用担心竞态（race condition）的问题
+
+使用纯函数来执行修改
+
+- 通过reducer将旧State与新State联系在一起，并且返回一个**新的State**
+- 随着应用程序复杂程度增加，可以将reducer拆分为多个小的reducer，分别用于操作不同State Tree的某一部分
+- 所有的reducer都应该是纯函数，不能产生任何的副作用
+
+### 优化重复代码
+
+当编写了一些案例的时候会发现，React结合Redux时会编写很多重复的代码
+
+在每个需要用到Redux中状态的组件中，都需要在不同生命周期做添加订阅/解除订阅的处理，组件初始化时还要从store中取最新的状态
+
+针对重复代码的问题，可以使用之前学到的高阶组件来做优化
+
+Redux官方提供的库`react-redux`，可以让我们更方便的在React中使用Redux
+
+```bash
+npm i react-redux
+```
+
+在Profile组件中，通过高阶函数`connect`实现的
+
+将store中需要的状态通过`mapStoreToProps`转为props，并将需要使用store中状态的组件传入调用connect返回的函数中
+
+在`Profile`组件中就可以从props中获取到store中的状态
+
+::: code-group
+```tsx [App.jsx]
+// App.jsx
+import React, { PureComponent } from 'react'
+import { Provider } from 'react-redux'
+import store from './store'
+import Profile from './Profile'
+
+export default class App extends PureComponent {
+  render() {
+    return (
+      <Provider store={store}>
+        <div>
+          <h2>App</h2>
+          <Profile></Profile>
+        </div>
+      </Provider>
+    )
+  }
+}
+```
+```tsx [Profile.jsx]
+// Profile.jsx
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
+
+// mapStateToProps is a function that
+//  takes the state of the store as an argument
+//  and returns an object with the data that the component needs from the store.
+// component will receive the data as props.
+const mapStateToProps = (state) => ({
+  count: state.count
+})
+
+export default connect(mapStateToProps)(
+  class Profile extends Component {
+    render() {
+      return (
+        <div>
+          <h2>Profile</h2>
+          <p>Count: {this.props.count}</p>
+        </div>
+      )
+    }
+  }
+)
+```
+:::
+
+我们刚刚只是完成了对State的映射，将Store中保存的全局状态state映射到了Profile组件的props中
+
+connect还可以传入第二个参数，用于将action也映射到props中：
+
+```tsx {4,10-13,17,25,26}
+// Profile.jsx
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import { INCREMENT, DECREMENT } from './store/constants'
+
+const mapStateToProps = (state) => ({
+  count: state.count
+})
+
+const mapDispatchToProps = (dispatch) => ({
+  increment: () => dispatch({ type: INCREMENT }),
+  decrement: () => dispatch({ type: DECREMENT })
+})
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(
+  class Profile extends Component {
+    render() {
+      return (
+        <div>
+          <h2>Profile</h2>
+          <p>Count: {this.props.count}</p>
+          <button onClick={this.props.increment}> +1 </button>
+          <button onClick={this.props.decrement}> -1 </button>
+        </div>
+      )
+    }
+  }
+)
+```
+
+本质上是`connect`内部对操作进行了封装，把逻辑隐藏起来了：
+
+- 调用`connect`这个**高阶函数**，返回一个**高阶组件**
+- 为高阶组件传入映射目标组件，最后高阶组件返回一个新组件
+- 新组件的props包含了来自Store中状态/dispatch的映射
+
 
