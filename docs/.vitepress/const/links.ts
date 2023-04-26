@@ -16,5 +16,6 @@ export const notes = [
   { text: 'JavaScript进阶', link: '/note/JavaScriptEnhanced' },
   { text: '前端工程化', link: '/note/Front-end Engineering' },
   { text: '服务端渲染', link: '/note/SSR' },
-  { text: 'React基础', link: '/note/React' }
+  { text: 'React基础', link: '/note/React' },
+  { text: 'MySQL', link: '/note/MySQL' }
 ]
