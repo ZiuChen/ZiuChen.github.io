@@ -3874,6 +3874,8 @@ export default store
 ```
 :::
 
+![redux-usage](./React.assets/redux-usage.svg)
+
 ### 进一步封装
 
 可以将耦合在一起的代码拆分到不同文件中
@@ -4109,5 +4111,168 @@ export default connect(
 - 调用`connect`这个**高阶函数**，返回一个**高阶组件**
 - 为高阶组件传入映射目标组件，最后高阶组件返回一个新组件
 - 新组件的props包含了来自Store中状态/dispatch的映射
+
+### 异步Action
+
+有些场景下，我们希望组件能够直接调用Store中的action来触发网络请求，并且获取到数据
+
+但是dispatch只允许派发对象类型的Action，不能通过dispatch派发函数
+
+可以通过中间件`redux-thunk`来对Redux做增强，让dispatch能够对函数进行派发
+
+```bash
+npm i redux-thunk
+```
+
+通过`applyMiddleware`引入`redux-thunk`这个中间件：
+
+::: code-group
+```tsx [index.js] {2,3,6}
+// store/index.js
+import { createStore, applyMiddleware } from 'redux'
+import thunk from 'redux-thunk'
+import reducer from './reducer'
+
+const store = createStore(reducer, applyMiddleware(thunk))
+
+export default store
+```
+```tsx [actionFactory.js]
+// actionFactory.js
+export const fetchPostList = () => {
+  return (dispatch, getState) => {
+    fetch('https://jsonplaceholder.typicode.com/posts')
+      .then((res) => res.json())
+      .then((res) => {
+        dispatch({
+          type: actionType.FETCH_POST_LIST,
+          list: res
+        })
+      })
+  }
+}
+```
+```tsx [list.jsx]
+// list.jsx
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import { fetchPostList } from './store/actionFactory'
+
+const mapStateToProps = (state) => ({
+  list: state.list
+})
+
+const mapDispatchToProps = (dispatch) => ({
+  fetchList: () => dispatch(fetchPostList())
+})
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(
+  class Profile extends Component {
+    render() {
+      return (
+        <div>
+          <h2>List</h2>
+          <button onClick={() => this.props.fetchList()}>Fetch List</button>
+          {this.props.list.length && (
+            <ul>
+              {this.props.list.map((item) => (
+                <li key={item.id}>{item.title}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )
+    }
+  }
+)
+```
+:::
+
+- 这样就可以将网络请求的具体逻辑代码隐藏到Redux中
+- 将网络请求归于状态管理的一部分
+- 而不是书写在组件内，不利于维护，耦合度太高
+
+`redux-thunk`是如何做到可以让我们发送异步请求的？
+
+- 默认情况下`dispatch(action)`的action必须为一个JS对象
+- `redux-thunk`允许我们传入一个函数作为`action`
+- 函数会被调用，并且将`dispatch`函数和`getState`函数作为入参传递给这个函数action
+  - `dispatch` 允许我们在这之后再次派发`action`
+  - `getState` 允许我们之后的一些操作依赖原来的状态，可以获取到之前的状态
+
+下图展示了从组件调用方法，触发patch到Redux接收patch、发送网络请求、更新state的全过程：
+
+![redux-async-action](./React.assets/redux-async-action.svg)
+
+### 拆分Store
+
+拆分Store带来的益处很多，便于多人协作、不同业务逻辑解耦等
+
+在Redux中，拆分Store的本质是拆分不同的`reducer`函数，之前在使用`createStore`时，传入的就是`reducer`函数
+
+之前的Store写法与用法：
+
+```tsx {8-9}
+// store/index.js
+import { createStore } from 'redux'
+import reducer from './reducer'
+
+const store = createStore(reducer)
+
+// App.jsx
+store.getState().count
+store.getState().list
+```
+
+拆分Store后的写法与用法：
+
+```tsx {7-8,14-15}
+// store/index.js
+import { createStore, combineReducers } from 'redux'
+import counterReducer from './counter'
+import postListReducer from './postList'
+
+const reducer = combineReducers({
+  counter: counterReducer,
+  postList: postListReducer
+})
+
+const store = createStore(reducer)
+
+// App.jsx
+store.getState().counter.count
+store.getState().postList.count
+```
+
+拆分为多个Reducer之后，需要首先`getState()`获取到整个状态树，随后指定获取到不同的模块中的状态
+
+拆分后，不同模块下的文件是保持一致的：
+
+```sh
+- store/ # Store根目录
+  - index.js # 导出 store 位置
+  - counter/ # Counter模块
+    - actionFactory.js
+    - constants.js
+    - index.js # 统一导出
+    - reducer.js
+  - postList/ # PostList模块
+    - actionFactory.js
+    - constants.js
+    - index.js
+    - reducer.js
+  - ...
+```
+
+#### combineReducer函数
+
+前面拆分Store时用到了`combineReducer`函数，将多个模块reducer组合到一起，函数内部是如何处理的？
+
+- 将传入的reducers合并到一个对象中，最终返回一个`combination`函数（相当于未拆分时传给`createStore`的`reducer`函数）
+- 在执行`combination`函数的过程中，它会通过判断前后返回的数据是否相同来决定返回之前的state还是新的state
+- 新state会触发订阅者发生对应更新，而旧state可以有效地组织订阅者发生刷新
 
 
