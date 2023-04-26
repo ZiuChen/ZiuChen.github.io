@@ -69,10 +69,13 @@ export default defineConfig({
       copyright: 'Copyright © 2019-present Ziu Chen'
     },
     lastUpdatedText: 'Updated Date',
-    algolia: {
-      apiKey: 'b4fd296ea5e467b3ac4a582160ff3122',
-      indexName: 'ziuchenio',
-      appId: 'LFZ2CPWWUG'
+    search: {
+      provider: 'algolia',
+      options: {
+        appId: 'LFZ2CPWWUG',
+        apiKey: 'b4fd296ea5e467b3ac4a582160ff3122',
+        indexName: 'ziuchenio'
+      }
     }
   }
 })
