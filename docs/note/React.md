@@ -4440,8 +4440,196 @@ export default connect(
 
 ReduxToolkit默认已经给我们集成了Thunk相关的功能：`createAsyncThunk`
 
-下面我们使用RTK实现一下这个场景：在Profile中请求数据并保存在Store中，在App中展示
+下面我们使用RTK实现一下这个场景：在Profile中请求postList数据并保存在Store中，并展示出来
 
+::: code-group
+```tsx [postList.js] {4-8,20}
+// store/features/postList.js
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
+export const fetchPostList = createAsyncThunk('fetch/postList', async () => {
+  const url = 'https://jsonplaceholder.typicode.com/posts'
+  const data = await fetch(url).then((res) => res.json())
+  return data
+})
+
+const postListSlice = createSlice({
+  name: 'postList',
+  initialState: {
+    postList: []
+  },
+  reducers: {
+    setPostList(state, { payload }) {
+      state.postList = payload
+    }
+  },
+  extraReducers: {
+    [fetchPostList.fulfilled]: (state, { payload }) => {
+      console.log('payload', payload)
+      state.postList = payload
+    },
+    [fetchPostList.pending]: (state, { payload }) => {
+      console.log('fetchPostList.pending', payload)
+    },
+    [fetchPostList.rejected]: (state, { payload }) => {
+      console.log('fetchPostList.rejected', payload)
+    }
+  }
+})
+
+export const { setPostList } = postListSlice.actions
+
+export default postListSlice.reducer
+```
+```tsx [index.js]
+// store/index.js
+import { configureStore } from '@reduxjs/toolkit'
+import counterReducer from './features/counter'
+import postListReducer from './features/postList'
+
+export default configureStore({
+  reducer: {
+    counter: counterReducer,
+    postList: postListReducer
+  }
+})
+```
+```tsx [Profile.jsx]
+// Profile.jsx
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import { fetchPostList } from '../store/features/postList'
+
+const mapStateToProps = (state) => ({
+  postList: state.postList.postList
+})
+
+const mapDispatchToProps = (dispatch) => ({
+  fetchPostList: () => dispatch(fetchPostList())
+})
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(
+  class Profile extends Component {
+    render() {
+      return (
+        <div>
+          Profile
+          <button onClick={() => this.props.fetchPostList()}>Fetch Data</button>
+          <ul>
+            {this.props.postList.map((item, index) => (
+              <li key={index}>{item.title}</li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+  }
+)
+```
+:::
+
+当`createAsyncThunk`创建出来的action被dispatch时，会存在三种状态：
+
+- pending: action被发出，但是还没有最终的结果
+- fulfilled: 获取到最终的结果（有返回值的结果）
+- rejected: 执行过程中又错误或者抛出了异常
+
+我们可以在`createSlice`的`entraReducer`中监听这些结果，根据派发action后的状态添加不同的逻辑进行处理
+
+除了上述的写法，还可以为`extraReducer`传入一个函数，函数接收一个`builder`作为参数，在函数体内添加不同的case来监听异步操作的结果：
+
+```ts
+// postList.js
+...
+extraReducers: (builder) => {
+  builder.addCase(fetchPostList.fulfilled, (state, { payload }) => {
+    state.postList = payload
+  })
+  builder.addCase(fetchPostList.pending, (state, { payload }) => {
+    console.log('fetchPostList.pending', payload)
+  })
+  builder.addCase(fetchPostList.rejected, (state, { payload }) => {
+    console.log('fetchPostList.rejected', payload)
+  })
+}
+...
+```
+
+在之前的代码中，我们都是通过触发action后置的回调来更新state，那么有没有可能在请求完毕时确定性地更新store中的state？
+
+可以当请求有结果了，在请求成功的回调中直接dispatch设置state的action
+
+当我们通过dispatch触发异步action时可以传递额外的参数，这些参数可以在传入createAsyncThunk的回调函数的参数中获取到，同时也可以从函数的参数中获取到`dispatch`与`getState`函数，这样就可以在请求到数据后直接通过派发action的方式更新store中的state，下面是修改后的例子：
+
+```ts {6}
+// postList.js
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+
+export const fetchPostList = createAsyncThunk(
+  'fetch/postList',
+  async (extraInfo, { dispatch, getState }) => {
+    const url = 'https://jsonplaceholder.typicode.com/posts'
+    const data = await fetch(url).then((res) => res.json())
+    dispatch(setPostList(data))
+  }
+)
+
+const postListSlice = createSlice({
+  name: 'postList',
+  initialState: {
+    postList: []
+  },
+  reducers: {
+    setPostList(state, { payload }) {
+      state.postList = payload
+    }
+  }
+})
+
+export const { setPostList } = postListSlice.actions
+
+export default postListSlice.reducer
+```
+
+当然，此时异步action的状态已经不那么重要了，也就不必再`return data`了，除非你需要对异常状态做额外处理，仍然可以在`extraReducers`中添加异常处理回调
+
+### Redux Toolkit的数据不可变性
+
+Redux Toolkit本质是对之前繁琐的操作进行的一次封装
+
+我们注意到：在之前reducer对state进行更新时，必须返回一个新的state才能触发修改`state = { ...state, count: count + 1 }`，但是经过Redux Toolkit的封装，我们只需要`state.count += 1`，直接对状态进行赋值就可以完成状态的更新
+
+这是因为在RTK内部使用了`immutable.js`，数据不可变性
+
+- 在React开发中，我们总是强调数据的不可变性
+  - 无论是类组件中的state还是redux中管理的state
+  - JS的编码过程里，数据的不可变性都是非常重要的
+- 所以在之前我们更新state时都是通过浅拷贝来完成的
+  - 但是浅拷贝也存在它的缺陷：
+  - 当对象过大时，进行浅拷贝会造成性能的浪费
+  - 浅拷贝后的新对象，其深层属性仍然是旧对象的引用
+
+Redux Toolkit底层使用了`immerjs`库来保证数据的不可变性
+
+immutablejs库的底层原理和使用方法：[React系列十八 - Redux(四)state如何管理](https://mp.weixin.qq.com/s/hfeCDCcodBCGS5GpedxCGg)
+
+为了节约内存，出现了新的算法`Persistent Data Structure`持久化数据结构/一致性数据结构
+
+- 用一种数据结构来保存数据
+- 当数据被修改时，会返回一个新的对象，但是新的对象会尽可能复用之前的数据结构而不会对内存进行浪费
+- 比如有一棵引用层级较深的树，当我们对其深层某个节点进行修改时，不会完全拷贝整棵树，而是在尽可能复用旧树结构的同时创建一棵新的树
+
+一图胜千言：
+
+![immutable](./React.assets/immutable.gif)
+
+### connect的实现原理
+
+connect函数是`react-redux`提供的一个高阶函数，它返回一个高阶组件，用于将store中的state/dispatch映射为组件的props
+
+下面手写一个connect函数，实现和库提供的connect一样的映射功能：
 
 
