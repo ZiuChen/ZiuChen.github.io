@@ -4275,4 +4275,173 @@ store.getState().postList.count
 - 在执行`combination`函数的过程中，它会通过判断前后返回的数据是否相同来决定返回之前的state还是新的state
 - 新state会触发订阅者发生对应更新，而旧state可以有效地组织订阅者发生刷新
 
+下面简单写了一下`combineReducer`的实现原理
+
+```ts
+// 使用
+combineReducer({
+  counter: combineReducer,
+  postList: postListReducer
+})
+
+// 创建一个新的reducer
+function reducer(state = {}, action) {
+  // 返回一个对象 是Store的state
+  return {
+    counter: counterReducer(state.counter, action),
+    postList: postListReducer(state.postList, action)
+  }
+}
+```
+
+## ReduxToolkit
+
+- ReduxToolkit重构
+- ReduxToolkit异步
+- connect高阶组件
+- 中间件的实现原理
+- React状态管理选择
+
+### 认识ReduxToolkit
+
+之前在使用`createStore`创建Store时会出现deprecated标识，推荐我们使用`@reduxjs/toolkit`包中的`configureStore`函数
+
+Redux Toolkit是官方推荐编写Redux逻辑的方法
+
+- 在前面学习Redux时已经发现，Redux的逻辑编写过于繁琐、麻烦
+- 代码分拆在不同模块中，存在大量重复代码
+- Redux Toolkit旨在成为编写Redux逻辑的标准方式，从而解决上面提到的问题
+- 这个包常被称为：RTK
+
+### 使用ReduxToolkit重写Store
+
+Redux Toolkit依赖于react-redux包，所以需要同时安装这二者
+
+```bash
+npm i @reduxjs/toolkit react-redux
+```
+
+Redux Toolkit的核心API主要是下述几个：
+
+- `configureStore` 包装createStore以提供简化的配置选项和良好的默认值
+  - 可以自动组合你的slice reducer 添加你提供的任何Redux中间件
+  - 默认包含redux-thunk，并启用Redux DevTools Extension
+- `createSlice` 创建切片 片段
+  - 接受reducer函数的对象、切片名称和初始状态值，并自动生成切片reducer，并带有actions
+- `createAsyncThunk`
+  - 接受一个动作类型字符串和一个返回Promise的函数
+  - 并生成一个`pending / fullfilled / rejected`基于该承诺分派动作类型的thunk
+
+写一个Demo：
+
+::: code-group
+```tsx [index.js]
+// store/index.js
+import { configureStore } from '@reduxjs/toolkit'
+import counterSlice from './features/counter'
+
+const store = configureStore({
+  reducer: {
+    counter: counterSlice
+  }
+})
+
+export default store
+```
+```tsx [counter.js]
+// store/features/counter.js
+import { createSlice } from '@reduxjs/toolkit'
+
+const counterSlice = createSlice({
+  name: 'counter',
+  initialState: {
+    count: 0
+  },
+  reducers: {
+    addCount(state, action) {
+      const { payload } = action
+      state.count += payload
+    },
+    subCount(state, action) {
+      const { payload } = action
+      state.count -= payload
+    }
+  }
+})
+
+const { actions, reducer } = counterSlice
+
+export const { addCount, subCount } = actions
+
+export default reducer
+```
+```tsx [Counter.jsx]
+// Counter.jsx
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import { addCount, subCount } from '../store/features/counter'
+
+const mapStateToProps = (state) => ({
+  count: state.counter.count
+})
+
+const mapDispatchToProps = (dispatch) => ({
+  increment: (count) => {
+    const action = addCount(count)
+    return dispatch(action)
+  },
+  decrement: (count) => {
+    const action = subCount(count)
+    return dispatch(action)
+  }
+})
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(
+  class Counter extends Component {
+    render() {
+      const { count } = this.props
+
+      return (
+        <div>
+          <h2>Counter</h2>
+          <div>count: {count}</div>
+          <button onClick={() => this.props.increment(1)}>+1</button>
+          <button onClick={() => this.props.decrement(1)}>-1</button>
+        </div>
+      )
+    }
+  }
+)
+```
+:::
+
+`createSlice` 函数参数解读
+
+- `name` 标记Slice 展示在dev-tool中
+- `initialState` 初始化状态
+- `reducers` 对象 对应之前的reducer函数
+- 返回值: 一个对象 包含所有actions
+
+`configureStore` 解读
+
+- `reducer` 将slice中的reducer组成一个对象，传入此参数
+- `middleware` 额外的中间件
+  - RTK已经为我们集成了`redux-thunk`和`redux-devtool`两个中间件
+- `devTools` 布尔值 是否启用开发者工具
+
+### 使用RTK执行异步dispatch
+
+实际场景中都是在组件中发起网络请求，并且将状态更新到Store中
+
+之前的开发中，我们通过`redux-thunk`这个中间件，让dispatch中可以进行异步操作
+
+ReduxToolkit默认已经给我们集成了Thunk相关的功能：`createAsyncThunk`
+
+下面我们使用RTK实现一下这个场景：在Profile中请求数据并保存在Store中，在App中展示
+
+
+
 
