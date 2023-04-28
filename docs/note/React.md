@@ -4793,3 +4793,74 @@ export default class App extends Component {
 ```
 :::
 
+### 实现日志中间件logger
+
+设想现在有需求：设计一个Redux中间件，当我们每次通过dispatch派发action时都能够在控制台输出：派发了哪个action，传递的数据是怎样的
+
+最终实现：拦截dispatch，并且在控制台打印派发的action
+
+```ts
+// logger.js
+function logger(store) {
+  const next = store.dispatch // 保留原始的dispatch函数
+  function dispatchWithLog(action) {
+    console.group(action.type)
+    console.log('dispatching', action)
+    const res = next.dispatch(action)
+    console.log('next state', store.getState())
+    console.groupEnd()
+    return res
+  }
+  store.dispatch = dispatchWithLog
+}
+
+logger(store) // 应用中间件
+```
+
+通过`monkey patch`对原始dispatch函数进行了修改，为函数添加额外的副作用
+
+### 实现redux-thunk
+
+`redux-thunk`这个库帮我们提供了派发异步函数的功能
+
+回顾一下`redux-thunk`的功能：
+
+- 默认情况下dispatch(action)的action必须为一个JS对象
+- redux-thunk允许我们传入一个函数作为action
+- 函数会被调用，并且将dispatch函数和getState函数作为入参传递给这个函数action
+  - dispatch 允许我们在这之后再次派发action
+  - getState 允许我们之后的一些操作依赖原来的状态，可以获取到之前的状态
+
+```ts {7}
+// thunk.js
+function thunk(store) {
+  const next = store.dispatch
+  function dispatchWithThunk(action) {
+    if (typeof action === 'function') {
+      // pass dispatch and getState to the thunk
+      return action(store.dispatch, store.getState)
+    }
+    return next(action)
+  }
+  return dispatchWithThunk
+}
+
+thunk(store) // 应用中间件
+```
+
+需要注意的是，传递给函数action的第一个参数是经过更新后的新的`dispatch`函数，这是从细节考虑：如果在函数中又派发了函数
+
+### 实现applyMiddleware
+
+当我们需要同时应用多个中间件时，可以用`applyMiddleware`来对多个中间件进行组合，统一进行注册
+
+```ts
+// applyMiddleware.js
+function applyMiddleware(store, ...fns) {
+  fns.forEach(fn => fn(store))
+}
+
+applyMiddleware(store, logger, thunk) // 使用applyMiddleware
+```
+
+
