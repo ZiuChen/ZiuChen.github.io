@@ -4630,6 +4630,166 @@ immutablejs库的底层原理和使用方法：[React系列十八 - Redux(四)st
 
 connect函数是`react-redux`提供的一个高阶函数，它返回一个高阶组件，用于将store中的state/dispatch映射为组件的props
 
-下面手写一个connect函数，实现和库提供的connect一样的映射功能：
+下面一步一步手写一个connect函数，实现和库提供的connect一样的映射功能：
 
+首先完成基本的代码搭建，connect函数接收两个参数`mapStateToProps` `mapDispatchToProps`返回一个高阶组件
+
+所谓高阶组件，就是传入一个类组件，返回一个增强后的新的类组件：
+
+```tsx
+// connect.js
+import { PureComponent } from 'react'
+
+export default function connect(mapStateToProps, mapDispatchToProps) {
+  return (WrapperComponent) =>
+    class InnerComponent extends PureComponent {
+      render() {
+        return <WrapperComponent {...this.props} />
+      }
+    }
+}
+```
+
+其中，`mapStateToProps`和`mapDispatchToProps`都是函数，函数入参是`state`与`dispatch`，返回一个对象，键值对对应`prop <=> state/dispatch调用`
+
+我们导入store，并且从store中获取到state和dispatch传入`mapStateToProps`和`mapDispatchToProps`，随后将得到的键值对以props形式传递给WrapperComponent
+
+这样新组件就可以拿到这些状态与dispatch方法，我们可以在`componentDidMount`中监听整个store，当store中的状态发生改变时，强制执行re-render
+
+```tsx {9}
+// connect.js
+import { PureComponent } from 'react'
+import store from '../store'
+
+export default function connect(mapStateToProps, mapDispatchToProps) {
+  return (WrapperComponent) =>
+    class InnerComponent extends PureComponent {
+      componentDidMount() {
+        store.subscribe(() => this.forceUpdate())
+      }
+
+      render() {
+        const state = mapStateToProps(store.getState())
+        const dispatch = mapDispatchToProps(store.dispatch)
+        return <WrapperComponent {...this.props} {...state} {...dispatch} />
+      }
+    }
+}
+```
+
+上述代码能够正常工作，但是显然每次store内state发生改变都re-render是不明智的，因为组件可能只用到了store中的某些状态
+
+那些组件没有用到的其他状态发生改变时，组件不应该也跟着re-render，这里可以做一些优化
+
+```ts {10,14-16}
+// connect.js
+import { PureComponent } from 'react'
+import store from '../store'
+
+export default function connect(mapStateToProps, mapDispatchToProps) {
+  return (WrapperComponent) =>
+    class InnerComponent extends PureComponent {
+      constructor(props) {
+        super(props)
+        this.state = mapStateToProps(store.getState())
+      }
+
+      componentDidMount() {
+        store.subscribe(() => {
+          this.setState(mapStateToProps(store.getState()))
+        })
+      }
+
+      render() {
+        const state = mapStateToProps(store.getState())
+        const dispatch = mapDispatchToProps(store.dispatch)
+
+        return <WrapperComponent {...this.props} {...state} {...dispatch} />
+      }
+    }
+}
+```
+
+经过优化后，每次store.state发生变化会触发setState，由React内部的机制来决定组件是否应当重新渲染
+
+如果组件依赖的state发生变化了，那么React会替我们执行re-render，而不是每次都强制执行re-render
+
+进一步地，我们可以补充更多细节：
+
+- 当组件卸载时解除监听
+  - `store.subscribe`会返回一个`unsubscribe`函数 用于解除监听
+- 解除与业务代码store的耦合
+  - 目前的store来自业务代码 更优的做法是从context中动态获取到store
+  - 应当提供一个context Provider供用户使用
+  - 就像`react-redux`一样，使用connect前需要将App用Provider包裹并传入store
+
+至此就基本完成了一个connect函数
+
+::: code-group
+```tsx [connect.js]
+// connect.js
+import { PureComponent } from 'react'
+import { StoreContext } from './storeContext'
+
+export function connect(mapStateToProps, mapDispatchToProps) {
+  return (WrapperComponent) => {
+    class InnerComponent extends PureComponent {
+      constructor(props, context) {
+        super(props)
+        this.state = mapStateToProps(context.getState())
+      }
+
+      componentDidMount() {
+        this.unsubscribe = this.context.subscribe(() => {
+          this.setState(mapStateToProps(this.context.getState()))
+        })
+      }
+
+      componentWillUnmount() {
+        this.unsubscribe()
+      }
+
+      render() {
+        const state = mapStateToProps(this.context.getState())
+        const dispatch = mapDispatchToProps(this.context.dispatch)
+
+        return <WrapperComponent {...this.props} {...state} {...dispatch} />
+      }
+    }
+
+    InnerComponent.contextType = StoreContext
+
+    return InnerComponent
+  }
+}
+```
+```tsx [storeContext.js]
+// storeContext.js
+import { createContext } from 'react'
+
+export const StoreContext = createContext(null)
+
+export const Provider = StoreContext.Provider
+```
+```tsx [App.jsx]
+// App.jsx
+import React, { Component } from 'react'
+import store from './store'
+import Counter from './cpns/Counter'
+import { Provider } from './hoc'
+
+export default class App extends Component {
+  render() {
+    return (
+      <Provider value={store}>
+        <div>
+          <h1>React Redux</h1>
+          <Counter />
+        </div>
+      </Provider>
+    )
+  }
+}
+```
+:::
 
