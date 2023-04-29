@@ -1,0 +1,1 @@
+import{_ as l,o as e,c as o,R as a}from"./chunks/framework.a304f0f7.js";const D=JSON.parse('{"title":"服务端渲染(SSR)","description":"","frontmatter":{},"headers":[],"relativePath":"note/SSR.md","lastUpdated":1682781459000}'),i={name:"note/SSR.md"},t=a("",80),s=[t];function n(c,r,d,p,u,h){return e(),o("div",null,s)}const g=l(i,[["render",n]]);export{D as __pageData,g as default};
