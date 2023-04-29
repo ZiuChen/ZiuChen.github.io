@@ -1,4 +1,6 @@
-## React Router
+# React Router
+
+## 了解ReactRouter
 
 三大框架都有各自的路由实现
 
@@ -274,7 +276,7 @@ export default withRouter(
 ```
 :::
 
-### 查询字符串的参数
+## 查询字符串的参数
 
 之前传递的是路径参数，那么查询字符串参数应该如何获取？
 
