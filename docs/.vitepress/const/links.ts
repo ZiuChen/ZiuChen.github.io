@@ -17,5 +17,7 @@ export const notes = [
   { text: '前端工程化', link: '/note/Front-end Engineering' },
   { text: '服务端渲染', link: '/note/SSR' },
   { text: 'React基础', link: '/note/React' },
+  { text: 'Redux', link: '/note/Redux' },
+  { text: 'React Router', link: '/note/React Router' },
   { text: 'MySQL', link: '/note/MySQL' }
 ]
