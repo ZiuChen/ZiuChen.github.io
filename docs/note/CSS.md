@@ -4,6 +4,8 @@ editLink: false
 
 # CSS基础
 
+## 书写CSS代码的方式
+
 CSS提供了三种方法，可以将CSS样式应用到元素上：
 
 - 内联样式

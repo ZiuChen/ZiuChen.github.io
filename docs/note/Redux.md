@@ -1,12 +1,5 @@
 # Redux
 
-- Redux的核心思想
-- Redux的基本使用
-- React结合Redux
-- Redux的异步操作
-- redux-devtool
-- reducer的模块拆分
-
 ## 理解JavaScript的纯函数
 
 - 函数式编程中有一个非常重要的概念 **纯函数**，JavaScript符合函数式编程的范式，所以也有纯函数的概念
