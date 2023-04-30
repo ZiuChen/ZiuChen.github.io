@@ -417,13 +417,11 @@ export default function UserInfo() {
 
 当然，对于复杂数据的处理，也可以将其放到Redux这类的状态管理中，如果没有Redux，那么`useReducer`可以在一定程度上扮演Redux的角色，但是本质还是`useState`的替代方案
 
-## useCallback和useMemo
+## useCallback
 
-这两个Hook都是用于性能优化
+`useCallback`和`useMemo`这两个Hook都是用于性能优化，用于减少组件re-render次数，提高性能
 
-### useCallback
-
-我们以计数器案例来对`useCallback`进行说明：
+首先我们以计数器案例来对`useCallback`进行说明：
 
 ```tsx
 // Counter.jsx
@@ -517,11 +515,134 @@ bar1() // 1
 
 不论调用了多少次`bar1`，其内部取到的值都始终是最初的那个`count`，自然值也不会发生变化
 
-所以，我们需要显式地为`useCallback`指定依赖state，这样才能让函数准确的使用到最新的状态
+所以，我们需要显式地为`useCallback`指定依赖state，这样才能准确地使用最新的状态定义新的函数
 
 ### 真实的useCallback使用场景
 
-经过之前的说明，目前`useCallback`看起来并没有实际的用途，它没有减少函数的定义次数，甚至在不合理使用时还会出现闭包陷阱，而带来的唯一好处就是：保证函数指向确定且唯一
+经过之前的说明，目前`useCallback`看起来并没有实际的用途，它没有减少函数的定义次数，甚至在不合理使用时还会出现闭包陷阱，而带来的唯一好处就是：**当状态没有发生改变时，保证函数指向确定且唯一**
 
 下面我们举一个实际场景来说明`useCallback`的用途：
+
+一个嵌套计数器的例子，外部计数器可以展示/改变计数器的值，子组件也可以通过调用props传递来的函数来改变计数器的值，同时外部计数器还包含了其他的状态在动态被修改
+
+::: code-group
+```tsx [InnerCounter.jsx]
+// InnerCounter.jsx
+import React, { memo } from 'react'
+
+export default memo(function InnerCounter(props) {
+  const { increment } = props
+
+  console.log('InnerCounter Re-render')
+
+  return (
+    <div>
+      <div>InnerCounter</div>
+      <button onClick={increment}>Inner +1</button>
+    </div>
+  )
+})
+```
+```tsx [Counter.jsx]
+// Counter.jsx
+import React, { memo, useState, useCallback } from 'react'
+import InnerCounter from './InnerCounter'
+
+export default memo(function Counter() {
+  const [count, setCount] = useState(0)
+  const [msg, setMsg] = useState('')
+
+  const increment = useCallback(
+    function () {
+      setCount(count + 1)
+    },
+    [count]
+  )
+
+  return (
+    <div>
+      <div>Counter</div>
+      <div>{count}</div>
+      <div>{msg}</div>
+      <button onClick={increment}>+1</button>
+      <button onClick={() => setMsg(Math.random())}>setMsg</button>
+      <InnerCounter increment={increment} />
+    </div>
+  )
+})
+```
+:::
+
+当我们将函数作为props传递给子组件时，如果函数地址发生改变，那么子组件也会发生re-render
+
+而这时`useCallback`就可以保证：当依赖不变时，返回的始终是同一个函数，保证函数地址唯一
+
+这时，搭配`memo`，当组件的props不变时，组件不会触发re-render（正常情况下，如果未使用`memo`，只要父组件re-render，那么所有子组件，无论其依赖的props是否发生变化，都会触发re-render）
+
+::: tip
+`React.memo` 为高阶组件。它与 `React.PureComponent` 非常相似，但它适用于函数组件，但不适用于 class 组件。
+
+如果你的函数组件在给定相同 `props` 的情况下渲染相同的结果，那么你可以通过将其包装在 `React.memo` 中调用，以此通过记忆组件渲染结果的方式来提高组件的性能表现。这意味着在这种情况下，React 将跳过渲染组件的操作并直接复用最近一次渲染的结果。
+
+默认情况下其只会对复杂对象做浅层对比，如果你想要控制对比过程，那么请将自定义的比较函数通过第二个参数传入来实现。
+:::
+
+这里的`memo`就类似于类组件中的`PureComponent`，是极力推荐用来完成基础的性能优化的，用来替代默认的编写组件的方式
+
+总结一下`useCallback`是如何进行性能优化的：
+
+- 需要将一个函数传递给子组件时，使用`useCallback`包裹，并显式指定其依赖
+- 将经过`useCallback`处理后的返回的函数传递给子组件
+- 这样，当依赖state未发生改变时，就可以保证子组件获得的props是一致的
+- 搭配`React,memo`，可以避免子组件不必要的re-render
+
+### 进一步优化useCallback
+
+在之前的代码中，虽然我们对无关状态变量`msg`做更新时，不会再触发InnerCounter的重新渲染了，但是每次`count`的值发生更新时，子组件每次仍然会重新渲染
+
+而在这个案例中，子组件InnerCounter只是需要对count值做更新，而不需要展示count值，这个re-render是不必要的
+
+这里可以使用`useRef`进行进一步的优化：
+
+```tsx {9,10,12}
+// Counter.jsx
+import React, { memo, useState, useCallback, useRef } from 'react'
+import InnerCounter from './InnerCounter'
+
+export default memo(function Counter() {
+  const [count, setCount] = useState(0)
+  const [msg, setMsg] = useState('')
+
+  const countRef = useRef()
+  countRef.current = count
+  const increment = useCallback(function () {
+    setCount(countRef.current + 1)
+  }, [])
+
+  return (
+    <div>
+      <div>Counter</div>
+      <div>{count}</div>
+      <div>{msg}</div>
+      <button onClick={increment}>+1</button>
+      <button onClick={() => setMsg(Math.random())}>setMsg</button>
+      <InnerCounter increment={increment} />
+    </div>
+  )
+})
+```
+
+我们首先清空`useCallback`的依赖数组，保证其返回的函数地址始终是唯一确定的
+
+然而这会进入闭包陷阱，导致函数从闭包状态变量取值时取到的始终是第一次调用时变量保存的值
+
+这时就可以通过`useRef`引入一个对象，在函数中通过引用地址与原始变量count建立联系，每次函数执行，需要取`count`值时，都首先取到引用对象`countRef`的地址，随后从其`current`属性中取值
+
+而`countRef.current`的值也会同步`setCount`的调用，跟随原始`count`值发生变化
+
+这就保证了状态变量的值能够跟随外部变化，并且闭包内取到的值始终是最新的状态值
+
+> [useCallback](https://legacy.reactjs.org/docs/hooks-reference.html#usecallback) Pass an inline callback and an array of dependencies. useCallback will return a memoized version of the callback that only changes if one of the dependencies has changed. This is useful when passing callbacks to optimized child components that rely on reference equality to prevent unnecessary renders (e.g. shouldComponentUpdate).
+
+## useMemo
 
