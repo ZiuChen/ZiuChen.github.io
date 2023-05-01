@@ -419,7 +419,7 @@ export default function UserInfo() {
 
 ## useCallback
 
-`useCallback`和`useMemo`这两个Hook都是用于性能优化，用于减少组件re-render次数，提高性能
+`useCallback`和`useMemo`这两个Hook都是用于性能优化，用于减少组件re-render次数，提高性能：**Returns a memoized callback**
 
 首先我们以计数器案例来对`useCallback`进行说明：
 
@@ -645,4 +645,165 @@ export default memo(function Counter() {
 > [useCallback](https://legacy.reactjs.org/docs/hooks-reference.html#usecallback) Pass an inline callback and an array of dependencies. useCallback will return a memoized version of the callback that only changes if one of the dependencies has changed. This is useful when passing callbacks to optimized child components that rely on reference equality to prevent unnecessary renders (e.g. shouldComponentUpdate).
 
 ## useMemo
+
+`useMemo`类似于`useCallback`，传入一个函数和一个依赖数组，只不过它缓存的不是函数地址，而是函数返回的计算结果：**Returns a memoized value**
+
+**当依赖数组的state未发生改变时，会跳过计算，直接返回之前的结果**
+
+这里还是使用计数器的案例，只不过在案例中我们额外计算了`[0, count]`值的和，展示在页面上：
+
+```tsx
+// CounterAccumulate.jsx
+import React, { memo, useState, useMemo } from 'react'
+
+/**
+ * calc [0, num] accumulate value
+ */
+function calcTotal(num) {
+  console.log('calcTotal')
+
+  let total = 0
+  for (let i = 0; i <= num; i++) {
+    total += i
+  }
+  return total
+}
+
+const CounterAccumulate = memo(() => {
+  const [count, setCount] = useState(0)
+  const total = useMemo(() => calcTotal(count), [count])
+  // const total = calcTotal(count)
+
+  return (
+    <div>
+      <div>CounterAccumulate</div>
+      <div>count: {count}</div>
+      <div>total: {total}</div>
+      <button onClick={() => setCount(count + 1)}>+1</button>
+    </div>
+  )
+})
+
+export default CounterAccumulate
+```
+
+由于我们将`count`指定为了依赖，所以每次count变化都会重新计算`total`的值
+
+如果我们引入无关状态变量，那么使用`useMemo`即可跳过无关变量发生变化时函数的重新计算，提高性能
+
+```tsx {5,15}
+// CounterAccumulate.jsx
+...
+const CounterAccumulate = memo(() => {
+  const [count, setCount] = useState(0)
+  const [_, setMsg] = useState('')
+  const total = useMemo(() => calcTotal(count), [count])
+  // const total = calcTotal(count)
+
+  return (
+    <div>
+      <div>CounterAccumulate</div>
+      <div>count: {count}</div>
+      <div>total: {total}</div>
+      <button onClick={() => setCount(count + 1)}>+1</button>
+      <button onClick={() => setMsg(Math.random())}>setMsg</button>
+    </div>
+  )
+})
+...
+```
+
+这时优化场景一，可以减少不必要的重新计算次数
+
+此外，`useMemo`还有一个重要的适用场景，当我们将一个对象作为props传递给子组件时
+
+由于每次父组件重新渲染，都会重新定义一个新的对象，这也就相当于子组件的props在不断发生变化，即使对象中的值并没有发生变化，也会触发子组件的重新渲染
+
+我们就可以通过传入一个空的依赖数组，用`useMemo`来保持对象值的稳定：
+
+```tsx
+const info = { name: 'Ziu', age: 18 }
+const info = useMemo(() => ({ name: 'Ziu', age: 18 }), [])
+...
+  <InnerCpn info={info} />
+...
+```
+
+总结一下`useMemo`的适用场景：
+
+- 进行大量的计算操作时，是否有必要每次渲染时都重新计算
+- 对子组件传递相同内容的**对象**时，使用`useMemo`进行性能的优化
+
+## useRef
+
+我们之前在`useCallback`中已经简单使用过`useRef`了
+
+`useRef`返回一个Ref对象，返回的Ref对象在整个生命周期保持不变
+
+最常用的ref有两种用法：
+
+- 引入DOM元素（或者组件，但需要是类组件）
+- 保存一个数据，每次从Ref对象中获取最新的数据，但Ref对象在整个生命周期可以保持不变
+
+用法一类似于之前类组件中的`createRef`，可以获取到组件内某个元素的DOM节点
+
+但是在函数式组件中，我们用`useRef`来实现这个操作
+
+在下面的案例中，可以通过点击按钮获取到input标签的DOM元素，并执行聚焦：
+
+```tsx
+// Input.jsx
+import React, { memo, useRef } from 'react'
+
+const Input = memo(() => {
+  const inputRef = useRef(null)
+
+  function focus() {
+    const input = inputRef.current
+    input.focus()
+  }
+
+  return (
+    <div>
+      <div>Input</div>
+      <input ref={inputRef} type="text" />
+      <button onClick={focus}>Focus Input</button>
+    </div>
+  )
+})
+
+export default Input
+```
+
+针对场景二，我们下面通过一个例子进行简单的验证，验证组件重新渲染后，两次创建的Ref对象是否为同一个对象：
+
+```tsx
+// TestRef.jsx
+import React, { memo, useState, useRef } from 'react'
+
+let tmp = null
+
+const TestRef = memo(() => {
+  const [, setCount] = useState(0)
+  const infoRef = useRef({ name: 'Ziu' })
+
+  console.log(tmp === infoRef)
+
+  tmp = infoRef
+
+  return (
+    <div>
+      <div>TestRef</div>
+      <button onClick={() => setCount(Math.random())}>Re-render</button>
+    </div>
+  )
+})
+
+export default TestRef
+```
+
+可以看到，组件第一次渲染时输出`false`，其后每次手动触发重新渲染后，控制台都输出`true`，证明每次重新渲染时`useRef`返回的都是同一个对象
+
+## useImperativeHandle
+
 
