@@ -806,4 +806,552 @@ export default TestRef
 
 ## useImperativeHandle
 
+> `useImperativeHandle` 可以让你在使用 `ref` 时自定义暴露给父组件的实例值。在大多数情况下，应当避免使用 `ref` 这样的命令式代码。
+
+举一个例子来说明这个Hook有什么作用：
+
+如果父组件希望获取到子组件DOM元素的的Ref对象，并且对子组件进行一系列的操作，我们可以用`useRef`搭配`forwardRef`来实现：
+
+```tsx
+// Banner.jsx
+import React, { memo, useRef, forwardRef } from 'react'
+
+const CustomInput = memo(
+  forwardRef((props, ref) => {
+    return <input type="text" ref={ref} />
+  })
+)
+
+const Banner = memo(() => {
+  const customInputRef = useRef(null)
+
+  function getDOM() {
+    customInputRef.current.focus()
+    customInputRef.current.value = ''
+  }
+
+  return (
+    <div>
+      <div>Banner</div>
+      <CustomInput ref={customInputRef} />
+      <button onClick={getDOM}>getDOM</button>
+    </div>
+  )
+})
+
+export default Banner
+```
+
+父组件可以获取到通过`forwardRef`的完整子组件的DOM元素，因而可以进行一些“侵入性”的操作
+
+可以完全操作DOM元素而不需要关心子组件的状态，这样大的权利有时候可能会对组件封装不利
+
+这时我们就可以使用`useImperativeHandle`来限制子组件向外暴露的接口，而不是完整暴露整个DOM节点
+
+```tsx
+// Banner.jsx
+import React, { memo, useRef, forwardRef, useImperativeHandle } from 'react'
+
+const CustomInput = memo(
+  forwardRef((props, ref) => {
+    const inputRef = useRef(null)
+
+    useImperativeHandle(ref, () => ({
+      focus: () => inputRef.current.focus(),
+      resetValue: () => (inputRef.current.value = '')
+    }))
+
+    return <input type="text" ref={inputRef} />
+  })
+)
+
+const Banner = memo(() => {
+  const customInputRef = useRef(null)
+
+  function getDOM() {
+    customInputRef.current.focus()
+    customInputRef.current.value = '' // 不再生效
+    customInputRef.current.resetValue() // 依然生效
+  }
+
+  return (
+    <div>
+      <div>Banner</div>
+      <CustomInput ref={customInputRef} />
+      <button onClick={getDOM}>getDOM</button>
+    </div>
+  )
+})
+
+export default Banner
+```
+
+在子组件中，我们使用`useRef`在组件内绑定Ref对象，再通过`useImperativeHandle`暴露需要转发的Ref对象，后续父组件通过ref获取到的Ref对象，就是限制能力之后的、子组件转发出来的Ref对象，而不再是之前完整的DOM节点
+
+- 通过`useImperativeHandle`这个Hook，将传入的`ref`和`useImperative`的第二个参数返回的对象绑定到了一起
+- 在父组件中，使用`inputRef.current`时，获取到的实际上是返回的对象
+
+除了对原有的DOM能力进行限制，`useImperativeHandle`还可以实现逻辑的API组合，比如我们将一系列复杂的DOM操作放入一个函数中暴露出去，这样父组件就可以调用一个接口实现一系列的操作
+
+## useLayoutEffect
+
+实际使用到的场景较少，官方也不推荐使用
+
+- `useEffect` 会在渲染的内容更新到真实DOM之后执行，不会阻塞DOM的更新
+- `useLayoutEffect` 会在渲染的内容更新到真实DOM之前执行，**会阻塞DOM的更新**
+
+当一个组件要重新渲染时，首先生成虚拟DOM，当完成虚拟DOM的diff之后，要将需要更新的DOM反映到真实DOM树上，在对真实DOM树做修改之前，会触发`useLayoutEffect`的回调
+
+![useLayoutEffect](./React%20Hooks.assets/useLayoutEffect.svg)
+
+```tsx
+// TestLayoutEffect.jsx
+import React, { memo, useState, useEffect, useLayoutEffect } from 'react'
+
+const TestLayoutEffect = memo(() => {
+  const [, setCount] = useState(0)
+
+  useEffect(() => {
+    console.log('useEffect')
+  })
+
+  useLayoutEffect(() => {
+    console.log('useLayoutEffect')
+  })
+
+  console.log('Rerender')
+  return (
+    <div>
+      <div>TestLayoutEffect</div>
+      <button onClick={() => setCount(Math.random())}>Rerender</button>
+    </div>
+  )
+})
+
+export default TestLayoutEffect
+```
+
+上面的案例中，每次点击按钮更新state状态变量时，控制台输出优先级为：
+
+`Rerender => useEffect => useLayoutEffect`
+
+## 自定义Hook
+
+可以将需要经常复用的逻辑进行抽取，变成自定义Hook
+
+### 案例一：共享Context
+
+某个组件需要使用到哪些Context，就需要将它们导入后使用`useContext`
+
+```ts
+import { useContext } from 'react'
+import { UserContext, ThemeContext } from '@/context'
+
+...
+const user = useContext(UserContext)
+const theme = useContext(ThemeContext)
+
+console.log(user.name, theme.primaryColor) // ...
+...
+```
+
+我们可以使用自定义Hook来简化这一操作，将所有的Context统一导入并转化为对象，直接在组件中使用
+
+对之前的Profile组件使用Hook进行增强：
+
+::: code-group
+```ts [useSharedContext.js]
+// useSharedContext.js
+import { useContext } from 'react'
+import { UserContext, ThemeContext } from '../context'
+
+export function useSharedContext() {
+  const user = useContext(UserContext)
+  const theme = useContext(ThemeContext)
+
+  return { user, theme }
+}
+```
+```ts [Profile.js]
+// Profile.js
+import React from 'react'
+import { useSharedContext } from '../hooks'
+
+export default function Profile() {
+  const context = useSharedContext()
+
+  return (
+    <div>
+      <div>Profile</div>
+      <div>userName: {context.user.userName}</div>
+      <div>age: {context.user.age}</div>
+      <div>theme: {context.theme.theme}</div>
+    </div>
+  )
+}
+```
+:::
+
+### 案例二：获取滚动位置
+
+::: code-group
+```tsx [useScrollPosition.js]
+// useScrollPosition.js
+import { useState, useEffect } from 'react'
+
+export function useScrollPosition(options = {}) {
+  const [offset, setOffset] = useState(0)
+
+  const handleScroll = () => {
+    setOffset(window.pageYOffset)
+  }
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll, options)
+    return () => window.removeEventListener('scroll', handleScroll)
+  })
+
+  return [offset]
+}
+```
+```tsx [GiantList.jsx]
+// GiantList.jsx
+import React, { memo } from 'react'
+import { useScrollPosition } from '../hooks'
+
+const GiantList = memo(() => {
+  const list = new Array(100).fill(0).map((_, i) => i)
+  const [offset] = useScrollPosition()
+
+  return (
+    <div>
+      <div>GiantList</div>
+      <div>offset: {offset}</div>
+      <ul>
+        {list.map((item, index) => (
+          <li key={index}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  )
+})
+
+export default GiantList
+```
+:::
+
+### 案例三：封装localStorage
+
+在使用状态变量的时候，为状态变量值的更新添加副作用，将变量名作为key，值更新到localStorage中
+
+::: code-group
+```tsx [useLocalStorage.js]
+// useLocalStorage.js
+import { useState, useEffect } from 'react'
+
+export function useLocalStorage(key) {
+  const [value, setValue] = useState(() => {
+    const data = window.localStorage.getItem(key)
+    return data ? JSON.parse(data) : null
+  })
+
+  useEffect(() => {
+    const data = JSON.stringify(value)
+    window.localStorage.setItem(key, data)
+  }, [key, value])
+
+  return [value, setValue]
+}
+```
+```tsx [UserInfoStorage.jsx]
+// UserInfoStorage.jsx
+import React, { memo } from 'react'
+import { useLocalStorage } from '../hooks/useLocalStorage'
+
+const UserInfoStorage = memo(() => {
+  const [token, setToken] = useLocalStorage('token')
+
+  function handleInputChange(e) {
+    setToken(e.target.value || '')
+  }
+
+  return (
+    <div>
+      <div>UserInfoStorage</div>
+      <div>token: {token}</div>
+      <input type="text" onChange={(e) => handleInputChange(e)} />
+    </div>
+  )
+})
+
+export default UserInfoStorage
+```
+:::
+
+这里的`useState`还展示了一个额外的用法，向`useState`传递一个函数，函数的返回值会作为状态变量的初始值
+
+## Redux Hooks
+
+之前的Redux开发中，为了让组件和Redux建立联系，我们使用了react-redux中的connect
+
+- 必须与高阶函数结合，必须使用返回的高阶组件
+- 必须编写`mapStateToProps` `mapDispatchToProps`，将上下文状态映射到props中
+
+从Redux7.1开始，支持Hook写法，不再需要编写connect以及映射函数了
+
+### useSelector
+
+将state映射到组件中
+
+- 参数一：将state映射到需要的数据中
+- 参数二：可以进行比较，来决定组件是否重新渲染
+
+默认情况下`useSelector`监听整个state的变化，只要state中有状态变量发生变化，无论当前组件是否使用到了这个状态变量，都会触发组件的重新渲染。这就需要我们显式地为其指定重新渲染的判断条件
+
+> `useSelector`会比较我们返回的两个对象是否相等：
+> 
+> ```ts
+> const refEquality = (a, b) => (a === b);
+> ```
+> 只有两个对象全等时，才可以不触发重新渲染
+
+### useDispatch
+
+直接获取`dispatch`函数，之后在组件中直接调用即可
+
+另外，我们还可以通过`useStore`来获取当前的store对象
+
+拿之前Redux的计数器举例，使用`useSelector`与`useDispatch`进行重构：
+
+::: code-group
+```tsx [[Now] Counter.jsx]
+// [Now] Counter.jsx
+import { memo } from 'react'
+import { useSelector, useDispatch, shallowEqual } from 'react-redux'
+import { addCount, subCount } from '../store/features/counter'
+
+const Counter = memo(() => {
+  const count = useSelector((state) => state.counter.count, shallowEqual)
+  const dispatch = useDispatch()
+  return (
+    <div>
+      <h2>Count: {count}</h2>
+      <button onClick={() => dispatch(addCount(1))}>+1</button>
+      <button onClick={() => dispatch(subCount(1))}>-1</button>
+    </div>
+  )
+})
+
+export default Counter
+```
+```tsx [[Prev] Counter.jsx]
+// [Prev] Counter.jsx
+import { connect } from '../hoc'
+import { addCount, subCount } from '../store/features/counter'
+
+const mapStateToProps = (state) => ({
+  count: state.counter.count
+})
+
+const mapDispatchToProps = (dispatch) => ({
+  addCount: (num) => dispatch(addCount(num)),
+  subCount: (num) => dispatch(subCount(num))
+})
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(() => {
+  return (
+    <div>
+      <h2>Count: {this.props.count}</h2>
+      <button onClick={() => this.props.addCount(1)}>+1</button>
+      <button onClick={() => this.props.subCount(1)}>-1</button>
+    </div>
+  )
+})
+```
+:::
+
+`react-redux`为我们提供了`shallowEqual`函数，用来比较两次映射出来的对象是否相同。
+
+使用时我们直接导入并传递给`useSelector`的第二个参数即可
+
+## React 18 新Hooks
+
+### useId
+
+用于生成横跨服务端和客户端的唯一稳定ID，同时避免hydration不匹配
+
+本质上是找到当前组件在组件树中的深度与层级，保证生成的值的一致性
+
+#### SSR
+
+同构应用
+
+- 一套代码，既可以在服务端运行，又可以在客户端运行，这就是同构应用
+- 同构是一种SSR的形态，是现代SSR的一种表现形式
+  - 当用户发出请求时，先在服务器通过SSR渲染出首页的内容
+  - 但是对应的代码同样可以在客户端被执行
+  - 执行的目的包括：绑定事件等，同时切换页面时，也可以在客户端被渲染
+
+Hydration
+
+> When doing SSR our pages are rendered to HTML. But HTML alone is not sufficient to make a page interactive. For example, a page with zero browser-side JavaScript cannot be interactive (there are no JavaScript event handlers to react to user actions such as click on a button.)
+>
+> To make our page interactive, in addition to render our page to HTML in Node.js, our UI framework (Vue/React/...) also loads and renders the page in the browser. (It creates an internal representation of the page, and then maps the internal representation to the DOM elements of the HTML we rendered in Node.js)
+>
+> This process is called *hydration*. Informally speaking: it makes our page interactive/alive/hydrated.
+
+在进行SSR时，我们的页面会呈现为HTML
+
+但仅仅HTML不足以使页面具有可交互性。例如：浏览器侧的JavaScript为零的页面是无法交互的，没有JavaScript事件处理程序来响应用户操作，例如单击按钮
+
+为了使我们的页面具有交互性，除了在Node.js中将页面呈现为HTML，我们的UI框架还在浏览器中加载和呈现页面（它创建页面的内部表示，然后将内部表示映射到我们在Node.js中呈现的HTML的DOM元素）
+
+这里用一张图简单介绍一下SSR的流程：
+
+![SSR](./React%20Hooks.assets/SSR.svg)
+
+### useTransition
+
+并不是做CSS动画的，而是用来完成过渡任务的
+
+返回一个状态值表示过渡任务的等待状态，以及一个启动该过渡任务的函数
+
+可以允许我们给React一些提示：某些任务的更新优先级较低，可以稍后再进行更新
+
+举一个例子：用输入框内的文本实时筛选万级数据的大列表，我们改造一下之前的GiantList案例：
+
+```tsx
+// GiantList.jsx
+import React, { memo, useState } from 'react'
+
+const list = new Array(10000).fill(0).map((_, i) => i)
+
+const GiantList = memo(() => {
+  const [showList, setShowList] = useState(list)
+  const [, setKeyword] = useState('')
+
+  function handleKeywordChange(e) {
+    const { value } = e.target
+    setKeyword(value || '')
+    value
+      ? setShowList(list.filter((item) => item.toString().includes(value)))
+      : setShowList(list)
+  }
+
+  return (
+    <div>
+      <div>GiantList</div>
+      <input type="text" onChange={(e) => handleKeywordChange(e)} />
+      <ul>
+        {showList.map((item, index) => (
+          <li key={index}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  )
+})
+
+export default GiantList
+```
+
+用户在向文本框内输入数据时，能够感受到明显卡顿：明明已经按下了键盘，但是输入框内却还没有文本
+
+这是因为文本框内的state更新与巨型列表的更新是同步的，二者的变化会同时反映到页面上
+
+文本框内的state更新应该优先于筛选列表的展示，无论如何都应该先更新文本框，来获得更好的用户体验
+
+这时就可以引入`useTransition`，将巨型列表的更新延后，变成一个“过渡任务”
+
+```tsx {9,15-19,26}
+// GiantList.jsx
+import React, { memo, useState, useTransition } from 'react'
+
+const list = new Array(10000).fill(0).map((_, i) => i)
+
+const GiantList = memo(() => {
+  const [showList, setShowList] = useState(list)
+  const [, setKeyword] = useState('')
+  const [pending, startTransition] = useTransition()
+
+  function handleKeywordChange(e) {
+    const { value } = e.target
+    setKeyword(value || '')
+
+    startTransition(() => {
+      value
+        ? setShowList(list.filter((item) => item.toString().includes(value)))
+        : setShowList(list)
+    })
+  }
+
+  return (
+    <div>
+      <div>GiantList</div>
+      <input type="text" onChange={(e) => handleKeywordChange(e)} />
+      <div>{pending ? 'Loading...' : ''}</div>
+      <ul>
+        {showList.map((item, index) => (
+          <li key={index}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  )
+})
+
+export default GiantList
+```
+
+将需要延迟更新的操作放入`startTransition`后，可以明显地发现，输入框内的文本先被更新展示到了页面上，而巨型列表的更新则会在自己的筛选操作完成后，展示到页面上
+
+这里还利用`pending`做了一下加载中的状态提示
+
+### useDeferredValue
+
+`useDeferredValue`接收一个值，并返回该值的新副本，该副本将推迟到更紧急的更新之后
+
+本质上与`useTransition`是相同的目的：为了让DOM更新延迟进行
+
+我们沿用之前的例子来说明它的用法
+
+```tsx {9,14-16,24}
+// GiantList.jsx
+import React, { memo, useState, useDeferredValue } from 'react'
+
+const list = new Array(10000).fill(0).map((_, i) => i)
+
+const GiantList = memo(() => {
+  const [showList, setShowList] = useState(list)
+  const [, setKeyword] = useState('')
+  const deferredShowList = useDeferredValue(showList)
+
+  function handleKeywordChange(e) {
+    const { value } = e.target
+    setKeyword(value || '')
+    value
+      ? setShowList(list.filter((item) => item.toString().includes(value)))
+      : setShowList(list)
+  }
+
+  return (
+    <div>
+      <div>GiantList</div>
+      <input type="text" onChange={(e) => handleKeywordChange(e)} />
+      <ul>
+        {deferredShowList.map((item, index) => (
+          <li key={index}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  )
+})
+
+export default GiantList
+```
+
+不需要使用额外的API来显式指定哪些操作作为过渡任务延迟执行更新，只需要将原有的状态变量使用`useDeferredValue`包裹后，使用返回的值进行展示。
+
+后续，对原来的状态变量进行的任何操作，当更新反映到真实DOM时都会被延迟执行
 
