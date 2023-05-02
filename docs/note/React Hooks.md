@@ -902,7 +902,7 @@ export default Banner
 
 当一个组件要重新渲染时，首先生成虚拟DOM，当完成虚拟DOM的diff之后，要将需要更新的DOM反映到真实DOM树上，在对真实DOM树做修改之前，会触发`useLayoutEffect`的回调
 
-![useLayoutEffect](./React%20Hooks.assets/useLayoutEffect.svg)
+![useLayoutEffect](./React-Hooks.assets/useLayoutEffect.svg)
 
 ```tsx
 // TestLayoutEffect.jsx
@@ -1211,7 +1211,7 @@ Hydration
 
 这里用一张图简单介绍一下SSR的流程：
 
-![SSR](./React%20Hooks.assets/SSR.svg)
+![SSR](./React-Hooks.assets/SSR.svg)
 
 ### useTransition
 
