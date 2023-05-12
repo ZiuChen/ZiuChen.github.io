@@ -35,7 +35,7 @@ Node.js是一个基于**V8 JavaScript引擎**的**JavaScript运行时环境**
   - JavaScript代码 -> V8 -> Node.js Bindings -> LibUV
   - LibUV是使用**C语言编写的库**，提供了**事件循环、文件系统读写、网络IO、线程池**等等内容
 
-![The Node.js System](Front-end Engineering.assets/The Node.js System.jpeg)
+![The Node.js System](Front-end-Engineering.assets/the-node.js-system.jpeg)
 
 ### Node.js的应用场景
 
@@ -635,7 +635,7 @@ ESModule的解析过程可以分为三个阶段：
   - 运行代码，计算值，并且将值填充到内存地址中
   - 将导入导出的**值**赋给对应的变量`name = 'Ziu'`
 
-![ESModule解析过程](Front-end Engineering.assets/esmodule-phases.png)
+![ESModule解析过程](Front-end-Engineering.assets/esmodule-phases.png)
 
 文章推荐：[ES modules: A cartoon deep-dive](https://hacks.mozilla.org/2018/03/es-modules-a-cartoon-deep-dive/)
 
@@ -1001,7 +1001,7 @@ PNPM（performant npm）有以下优点：
   - 符号链接 是一类特殊的文件
   - 其包含有一条以绝对路径或者相对路径的形式**指向其他文件或者目录的引用**
 
-![hard-link and soft-link](Front-end Engineering.assets/hard-link-and-soft-link.jpg)
+![hard-link and soft-link](Front-end-Engineering.assets/hard-link-and-soft-link.jpg)
 
 操作系统使用不同的**文件系统**，**对真实的硬盘读写操作做了一层抽象**，借由文件系统，我们得以方便地操作和访问文件的真实数据
 
@@ -1055,7 +1055,7 @@ PNPM（performant npm）有以下优点：
   - 在`node_modules/.pnpm`中，包含了附加版本信息的真实文件（硬链接到硬盘数据的文件）
   - 所有间接依赖，都通过软链接的方式，链接到被铺平在`.pnpm`文件夹中对应版本的硬链接文件上
 
-![how pnpm works](Front-end Engineering.assets/how-pnpm-works.jpg)
+![how pnpm works](Front-end-Engineering.assets/how-pnpm-works.jpg)
 
 #### 常用命令
 

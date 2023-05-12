@@ -1,11 +1,4 @@
-# 服务端渲染(SSR)
-
-- 邂逅SPA和SSR
-- Node服务搭建
-- Vue3 + SSR搭建
-- SSR + Hydration 水合
-- Vue SSR + Router
-- Vue SSR + Pinia
+# 服务端渲染
 
 ## 邂逅SPA和SSR
 
