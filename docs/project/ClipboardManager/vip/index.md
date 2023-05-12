@@ -12,9 +12,9 @@
   - `WebDav数据多端同步` <Badge type="tip" text="已上线" />
   - `支持保存2000条历史记录` <Badge type="tip" text="已上线" />
   - `不限制历史记录过期时间` <Badge type="tip" text="已上线" />
-  - `文本内容增强, 按住Ctrl/Command点击文本/链接 可以直接预览/跳转` <Badge type="tip" text="已上线" />
-  - `图片预览增强, 按住Ctrl/Command点击图片 可以直接预览` <Badge type="tip" text="已上线" />
-  - `文件预览增强, 按住Ctrl/Command点击文件 可以打开其所在文件夹` <Badge type="tip" text="已上线" />
+  - `文本/图片/文件预览增强, 按住Ctrl/Command点击 解锁更多操作` <Badge type="tip" text="已上线" />
+  - `键盘操作模式 屏蔽鼠标 高效快捷` <Badge type="tip" text="已上线" />
+  - `简洁模式 隐藏页面中不必要的组件与元素` <Badge type="tip" text="已上线" />
   - `自定义分类排序` <Badge type="tip" text="已上线" />
   - `预览页代码高亮` <Badge type="tip" text="已上线" />
   - `关闭剪贴板图片记录` <Badge type="tip" text="已上线" />
@@ -29,10 +29,10 @@
 - **插件会员为大版本买断制，购买后即可享用当前版本(2.x)后续所有更新的会员内容**
 - 插件会员为虚拟商品，购买后不支持退款
 - 插件会员的价格是浮动的，随着功能和权益的增加，不排除涨价的可能
-- 购买插件会员后如果出现相关问题，欢迎[加入QQ群](https://jq.qq.com/?_wv=1027&k=fURjGVJr)反馈
+- 购买插件会员后若未能及时到账，请[加入QQ群](https://jq.qq.com/?_wv=1027&k=fURjGVJr)反馈
 :::
 
-插件会员定价`8元`，登录uTools账号后点击插件工具栏中个人中心图标进入购买页面
+插件会员定价`10元`，登录uTools账号后，点击插件导航栏中个人中心图标进入购买页面
 
 购买后可使用会员功能，不购买不影响基本功能的使用，希望大家多多理解，按需购买
 
@@ -63,7 +63,7 @@
 
 相关链接：
 
-- [Teracloud](https://teracloud.jp/en/) （国内可用 无限制）
+- [Infini Cloud](https://infini-cloud.net/en/) （国内可用 无限制）
 - [坚果云 WebDav](https://help.jianguoyun.com/?tag=webdav)（国内可用 限制调用次数）
 - [2022年还有哪些支持WebDAV的网盘？](https://www.zhihu.com/question/347182171)
 
