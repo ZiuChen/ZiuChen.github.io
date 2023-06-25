@@ -5,12 +5,12 @@
     "preview": "vitepress preview docs"
   },
   "devDependencies": {
-    "@types/node": "^18.11.19",
-    "vitepress": "1.0.0-alpha.71",
-    "vue": "^3.2.45"
+    "@types/node": "^18.16.18",
+    "vue": "^3.3.4"
   },
   "dependencies": {
     "medium-zoom": "^1.0.8",
-    "swiper": "^9.1.1"
+    "swiper": "^9.4.1",
+    "vitepress": "1.0.0-beta.3"
   }
 }
