@@ -13,10 +13,10 @@
   - `支持保存2000条历史记录` <Badge type="tip" text="已上线" />
   - `不限制历史记录过期时间` <Badge type="tip" text="已上线" />
   - `文本/图片/文件预览增强, 按住Ctrl/Command点击 解锁更多操作` <Badge type="tip" text="已上线" />
-  - `键盘操作模式 屏蔽鼠标 高效快捷` <Badge type="tip" text="已上线" />
+  - `键盘操作模式 Vim快捷键` <Badge type="tip" text="已上线" />
   - `简洁模式 隐藏页面中不必要的组件与元素` <Badge type="tip" text="已上线" />
   - `自定义分类排序` <Badge type="tip" text="已上线" />
-  - `预览页代码高亮` <Badge type="tip" text="已上线" />
+  - `预览页代码高亮 预览快捷键` <Badge type="tip" text="已上线" />
   - `关闭剪贴板图片记录` <Badge type="tip" text="已上线" />
   - `插件使用统计` <Badge type="tip" text="已上线" />
   - **...**

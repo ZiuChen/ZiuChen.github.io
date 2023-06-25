@@ -9,6 +9,8 @@
 - `Ctrl+数字键`快速粘贴 `Alt+数字键`快速复制
 - `输入任意字母或数字/Ctrl+F`聚焦搜索框并输入 支持使用`空格`同时检索多个关键词
 - `Ctrl/Command+鼠标左键`点击文本/图片/文件 直接进入预览/打开所在文件夹 <Badge type="warning" text="插件会员" />
+- <code>`</code>快速展开/收起预览面板 <Badge type="warning" text="插件会员" />
+- `H` `J` `K` `L`键盘操作模式下Vim快捷键 支持上下左右移动 <Badge type="warning" text="插件会员" />
 
 ## 如何手动安装`clipboard-event-handler`
 
