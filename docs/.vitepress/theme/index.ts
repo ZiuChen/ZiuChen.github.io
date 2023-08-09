@@ -1,7 +1,7 @@
 import type { EnhanceAppContext } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
-import { nextTick, watchEffect } from 'vue'
-import { inBrowser, useRouter } from 'vitepress'
+import { nextTick, watch } from 'vue'
+import { inBrowser, useRoute } from 'vitepress'
 import mediumZoom from 'medium-zoom'
 
 import Title from '../components/Title.vue'
@@ -21,11 +21,15 @@ export default {
     app.component('ImgSlider', ImgSlider)
   },
   setup() {
-    const router = useRouter()
-    watchEffect(() => {
-      // 将router.route.path作为依赖收集 首次访问即添加监听
-      const path = router.route.path
-      nextTick(() => (inBrowser ? mediumZoom('.main img', { background: 'var(--vp-c-bg)' }) : null))
-    })
+    const route = useRoute()
+    watch(
+      () => route.path,
+      () => {
+        nextTick(() =>
+          inBrowser ? mediumZoom('.main img', { background: 'var(--vp-c-bg)' }) : null
+        )
+      },
+      { immediate: true }
+    )
   }
 }
