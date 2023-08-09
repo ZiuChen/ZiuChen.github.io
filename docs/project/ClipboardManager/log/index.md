@@ -1,3 +1,9 @@
+---
+navbar: false
+sidebar: false
+aside: false
+---
+
 # 更新日志
 
 ## v2.2.1

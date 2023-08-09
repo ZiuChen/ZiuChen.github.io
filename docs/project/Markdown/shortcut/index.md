@@ -1,3 +1,9 @@
+---
+navbar: false
+sidebar: false
+aside: false
+---
+
 # 快捷键一览
 
 粗体 `Cmd-B`

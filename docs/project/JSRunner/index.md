@@ -1,6 +1,8 @@
 ---
 title: 超级JavaScript
 navbar: false
+sidebar: false
+aside: false
 ---
 
 <script setup>

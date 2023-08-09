@@ -1,5 +1,7 @@
 ---
 navbar: false
+sidebar: false
+aside: false
 ---
 
 # Q&A

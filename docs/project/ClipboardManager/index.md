@@ -1,6 +1,8 @@
 ---
 title: 超级剪贴板
 navbar: false
+sidebar: false
+aside: false
 ---
 
 <script setup>

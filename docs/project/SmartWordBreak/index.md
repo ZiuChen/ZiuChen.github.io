@@ -1,6 +1,8 @@
 ---
 title: 超级分词
 navbar: false
+sidebar: false
+aside: false
 ---
 
 <script setup>

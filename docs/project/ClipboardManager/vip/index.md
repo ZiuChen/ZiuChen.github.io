@@ -1,3 +1,9 @@
+---
+navbar: false
+sidebar: false
+aside: false
+---
+
 # 插件会员
 
 :::tip
