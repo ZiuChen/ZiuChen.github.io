@@ -26,6 +26,12 @@ aside: false
 - Linux系统: `clipboard-event-handler-linux`
 - MacOS系统: `clipboard-event-handler-mac`
 
+::: warning
+适配了Apple M1芯片的监听程序： [clipboard-event-handler-mac-apple-silicon-arm64-M1](https://github.com/wangyw6716/clipboard-event-handler-mac-apple-silicon-arm64-M1)
+
+由于此仓库不在超级剪贴板开发者维护范围内，请自行注意辨别文件安全性。
+:::
+
 插件每次启动时，将自动检查剪贴板数据文件所在目录下是否存在剪贴板监听程序，如存在，则使用性能更优秀的新的监听策略，如不存在，则仍然使用旧的策略。
 
 ----
@@ -60,7 +66,10 @@ aside: false
 
 针对`MacOS`系统，在将剪贴板监听程序拷贝到指定目录后，请在重启插件后，**进入设置页，检查监听程序是否生效**
 
-如果监听程序未生效，请尝试以下操作，对监听程序进行签名与授权：
+如果监听程序未生效，可能是：
+
+1. 需要下载对应芯片的监听程序
+2. 需要对程序进行签名与授权
 
 **1. 签名**
 
@@ -82,12 +91,6 @@ sudo codesign --force --deep --sign -
 
 ![](../assets/mac-chmod.jpg)
 
-::: warning
-如果上述操作无法解决你的问题，请尝试从 [clipboard-event-handler-mac-apple-silicon-arm64-M1](https://github.com/wangyw6716/clipboard-event-handler-mac-apple-silicon-arm64-M1) 完成剪贴板监听程序的下载，并执行相同操作。
-
-由于此仓库不在超级剪贴板开发者维护范围内，请自行注意辨别文件安全性。
-:::
-
 #### 监听程序不生效如何排查？
 
 请务必完整按照教程完成安装，如果程序仍未生效，请按照如下方式排查：
@@ -96,27 +99,7 @@ sudo codesign --force --deep --sign -
 - 设置页`剪贴板监听程序状态`选项是否为`已安装`
 - 系统进程管理器中是否存在`clipboard-event-handler-xxxxx`的进程
 
-使用中遇到任何问题，请尝试通过论坛或加入QQ群反馈
-
-
-## 如何实现多端同步
-
-### WebDav同步 <Badge type="tip" text="^2.0.0" />
-
-::: tip
-自`v2.0.0`起，可以通过开通插件会员启用**WebDav同步功能**
-:::
-
-👉👉👉[插件会员/WebDav同步功能](../vip/index.md#webdav同步功能)👈👈👈
-
-## 如何迁移数据
-
-剪贴板数据默认存放在
-
-- `Windows` `Linux`用户：`{home}\_utools_clipboard_manager_storage`
-- `Mac`用户：`{userData}\_utools_clipboard_manager_storage`
-
-也可以在设置页中点击按钮打开数据库路径。要手动迁移数据，只需要在新设备上运行一次插件，而后将原设备上的数据文件拷贝并替换新设备中的数据文件即可
+使用中遇到任何问题，请尝试通过论坛或入群反馈
 
 ## 如何创造自己的功能按钮
 
