@@ -6,70 +6,20 @@ aside: false
 
 # 使用指南
 
-## 快捷键一览
+## 二进制监听程序在 MacOS 的特殊配置
 
-- 按下`空格`进入多选模式，连续向下选择 支持**跨标签**合并复制/粘贴
-- `鼠标左键`复制并粘贴 `鼠标右键`仅复制
-- `↑` `↓`选中历史记录 按下`↵`直接粘贴 `Ctrl+C`仅复制
-- `←` `→`切换分类 `Tab`键连续切换分类
-- `Ctrl+数字键`快速粘贴 `Alt+数字键`快速复制
-- `输入任意字母或数字/Ctrl+F`聚焦搜索框并输入 支持使用`空格`同时检索多个关键词
-- `Ctrl/Command+鼠标左键`点击文本/图片/文件 直接进入预览/打开所在文件夹 <Badge type="warning" text="插件会员" />
-- <code>`</code>快速展开/收起预览面板 <Badge type="warning" text="插件会员" />
-- `H` `J` `K` `L`键盘操作模式下Vim快捷键 支持上下左右移动 <Badge type="warning" text="插件会员" />
-
-## 如何手动安装`clipboard-event-handler`
-
-新版 `超级剪贴板` 对剪贴板内容更新事件的监听，依赖于可执行文件：
-
-- Windows系统: `clipboard-event-handler-win32.exe`
-- Linux系统: `clipboard-event-handler-linux`
-- MacOS系统: `clipboard-event-handler-mac`
-
-::: warning
-适配了Apple M1芯片的监听程序： [clipboard-event-handler-mac-apple-silicon-arm64-M1](https://github.com/wangyw6716/clipboard-event-handler-mac-apple-silicon-arm64-M1)
-
-由于此仓库不在超级剪贴板开发者维护范围内，请自行注意辨别文件安全性。
-:::
-
-插件每次启动时，将自动检查剪贴板数据文件所在目录下是否存在剪贴板监听程序，如存在，则使用性能更优秀的新的监听策略，如不存在，则仍然使用旧的策略。
-
-----
-
-### 1. 下载监听程序
-
-请[点击此处（百度网盘）](https://pan.baidu.com/s/14GJIXWDU2F4jsqDDq73aFg?pwd=Ziuc)或访问[node-clipboard-event](https://github.com/sudhakar3697/node-clipboard-event/tree/master/platform)手动下载**对应系统**的文件，并将其移动到**剪贴板数据文件所在目录**下
-
-插件使用的二进制文件拷贝自[node-clipboard-event](https://github.com/sudhakar3697/node-clipboard-event)，请避免从其它不可信的来源下载文件，并在下载文件后比较哈希，有能力的也可以从仓库源代码自行编译
-
-### 2. 找到剪贴板数据文件所在目录
-
-进入设置页（顶部导航栏/齿轮图标），点击数据库路径这一项右侧的打开按钮
-
-### 3. 将监听程序拷贝到目录中
-
-#### Windows:
-
-![](../assets/gi3.png)
-
-#### Linux:
-
-![](../assets/gi3-2.png)
-
-#### Mac:
-
-![](../assets/gi3-3.png)
-
-### 4. 注意事项
-
-#### MacOS 的特殊配置
-
-针对`MacOS`系统，在将剪贴板监听程序拷贝到指定目录后，请在重启插件后，**进入设置页，检查监听程序是否生效**
+针对`MacOS`系统，在将剪贴板监听程序拷贝到指定目录后，请在重启插件后，检查监听程序是否生效
 
 如果监听程序未生效，可能是：
 
 1. 需要下载对应芯片的监听程序
 2. 需要对程序进行签名与授权
+
+::: warning
+适配了Apple M1芯片的监听程序： [clipboard-event-handler-mac-apple-silicon-arm64-M1](https://github.com/wangyw6716/clipboard-event-handler-mac-apple-silicon-arm64-M1)
+
+由于此仓库不在超级剪贴板开发者维护范围内，请自行承担文件安全性带来的风险。
+:::
 
 **1. 签名**
 
@@ -87,19 +37,9 @@ sudo codesign --force --deep --sign -
 
 **2. 授权**
 
-*左上角🍎* -> *系统偏好设置* -> *安全性与隐私* -> *通用* -> *点击允许*
+左上角🍎 / 系统偏好设置 / 安全性与隐私 / 通用 / 点击允许
 
 ![](../assets/mac-chmod.jpg)
-
-#### 监听程序不生效如何排查？
-
-请务必完整按照教程完成安装，如果程序仍未生效，请按照如下方式排查：
-
-- 监听程序拷贝完成后，需要重启插件方可生效
-- 设置页`剪贴板监听程序状态`选项是否为`已安装`
-- 系统进程管理器中是否存在`clipboard-event-handler-xxxxx`的进程
-
-使用中遇到任何问题，请尝试通过论坛或入群反馈
 
 ## 如何创造自己的功能按钮
 
