@@ -10,11 +10,13 @@
     "isolatedModules": true,
     "esModuleInterop": true,
     "lib": ["ESNext", "DOM"],
-    "types": ["node"],
+    "types": ["node", "vite/client"],
     "skipLibCheck": true,
     "noEmit": true,
+    "jsxImportSource": "vue",
     "baseUrl": "."
   },
-  "include": ["docs/.vitepress/**/*.ts"],
+
+  "include": ["docs/.vitepress/**/*.ts", "docs/.vitepress/**/*.tsx", "docs/vite.config.ts"],
   "exclude": ["node_modules", "dist"]
 }
