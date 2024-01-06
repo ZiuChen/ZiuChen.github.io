@@ -36,11 +36,15 @@ aside: false
 
 ## 🔰 开始使用
 
-- 运行JavaScript代码 快速验证代码逻辑
-- 支持切换NodeJS/浏览器运行环境
-- `Ctrl/Command + R` 快速运行代码
-- `Ctrl/Command + Q` 清空控制台
-- `Ctrl/Command + N` 创建新代码片段
-- 支持回溯代码历史 支持保存/编辑代码运行历史
-- 支持手动触发代码运行/实时运行代码
-- 支持顶层await 适配深色模式
+- ✅ 运行JavaScript代码 快速验证代码逻辑
+- ✅ 支持切换NodeJS/浏览器操作环境
+- ✅ `Ctrl/Command+R` 快速运行代码
+- ✅ `Ctrl/Command+Q` 清除控制台
+- ✅ `Ctrl/Command+N` 创建新的代码片段
+- ✅ `Ctrl/Command+E` 切换锁定状态
+- ✅ `Ctrl/Command+Shift+P` 调用命令面板
+- ✅ `Ctrl/Command+Shift+L` 列出所有历史记录
+- ✅ 支持回溯代码历史 支持保存/编辑代码运行历史
+- ✅ 支持手动触发代码执行/实时运行代码
+- ✅ 支持顶层await 适配深色模式
+
