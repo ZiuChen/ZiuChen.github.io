@@ -1,5 +1,4 @@
-import get from 'lodash-es/get'
-import { FuncMap } from './types'
+import { BridgeMap } from './types'
 import { JSBridgeParams } from './sdk'
 
 /**
@@ -10,7 +9,7 @@ export function registerBase(target: Window) {
     const params = e.data as JSBridgeParams<any>
     const namespace = params.namespace
     const action = params.action
-    const callback = get(callbackMap, [namespace, action])
+    const callback = callbackMap?.[namespace]?.[action]
     if (callback) {
       const result = await callback(params.payload)
       target.postMessage(
@@ -24,10 +23,10 @@ export function registerBase(target: Window) {
   })
 }
 
-type Namespace = keyof FuncMap
-type Action = keyof FuncMap[Namespace]
-type Payload = FuncMap[Namespace][Action] extends { payload: infer P } ? P : never
-type Result = FuncMap[Namespace][Action] extends { result: infer R } ? R : never
+type Namespace = keyof BridgeMap
+type Action = keyof BridgeMap[Namespace]
+type Payload = BridgeMap[Namespace][Action] extends { payload: infer P } ? P : never
+type Result = BridgeMap[Namespace][Action] extends { result: infer R } ? R : never
 
 const callbackMap: Record<
   Namespace,
