@@ -7,8 +7,8 @@ let lastHashmap: any = null
  * 如果有更新则弹出提醒刷新页面
  */
 export function refresh() {
-  // SSR or SSG 模式不需要检查更新
-  if (import.meta.env.SSR) {
+  // SSR or DEV 下不需要检查更新
+  if (import.meta.env.SSR || import.meta.env.DEV) {
     return
   }
 

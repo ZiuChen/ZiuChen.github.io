@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitepress'
-import generateSideBar from './scripts/generateSideBar'
+import { indexArticleSidebar } from './scripts/indexArticleSidebar'
 import { projects, works, notes, JUEJIN } from './const'
 
 export default defineConfig({
@@ -45,7 +45,7 @@ export default defineConfig({
       {
         text: '文章归档',
         collapsed: true,
-        items: [...generateSideBar()]
+        items: [...indexArticleSidebar()]
       },
       {
         text: '学习笔记',
@@ -66,7 +66,7 @@ export default defineConfig({
     },
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2019-present Ziu Chen'
+      copyright: 'Copyright © 2022-PRESENT ZiuChen'
     },
     lastUpdatedText: 'Updated Date',
     search: {

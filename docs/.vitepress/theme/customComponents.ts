@@ -9,6 +9,6 @@ export function customComponents(app: App) {
   const cpns = [Title, ImgSlider]
 
   for (const c of cpns) {
-    app.component(c.__name, c)
+    app.component(c.__name!, c)
   }
 }
