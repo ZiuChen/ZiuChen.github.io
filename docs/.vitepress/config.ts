@@ -9,7 +9,11 @@ export default defineConfig({
   lastUpdated: true,
   head: [['link', { rel: 'icon', href: '/logo.png' }]],
   markdown: {
-    lineNumbers: true
+    lineNumbers: true,
+    math: true,
+    image: {
+      lazyLoading: true
+    }
   },
   themeConfig: {
     logo: '/logo.png',
@@ -46,11 +50,6 @@ export default defineConfig({
         text: '文章归档',
         collapsed: true,
         items: [...indexArticleSidebar()]
-      },
-      {
-        text: '学习笔记',
-        collapsed: true,
-        items: notes
       }
     ],
     socialLinks: [

@@ -20,5 +20,6 @@ export const notes = [
   { text: 'React Hooks', link: '/note/React Hooks' },
   { text: 'Redux', link: '/note/Redux' },
   { text: 'React Router', link: '/note/React Router' },
-  { text: 'MySQL', link: '/note/MySQL' }
+  { text: 'MySQL', link: '/note/MySQL' },
+  { text: 'Rust', link: '/note/Rust' }
 ]
