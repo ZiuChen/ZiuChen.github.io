@@ -886,17 +886,631 @@ fn main() {
 
 ### 什么是所有权
 
+Rust 的核心功能之一就是**所有权**（ownership）。
+
+所有程序都必须管理其运行时使用计算机内存的方式：
+
+- 一些语言具有垃圾回收机制，在程序运行时有规律地寻找不再使用的内存；
+- 在另一些语言中，程序员必须亲自分配和释放内存；
+- Rust 则选择了第三种方式，通过所有权系统管理内存
+
+编译器在编译时会根据一系列的规则进行检查，如果违反了任何这些规则，程序都不能编译。
+
+- Rust 中每一个值都有一个所有者（owner）；
+- 值在任一时刻只有且只有一个所有者；
+- 当所有者（变量）离开作用域，这个值会被丢弃。
+
+```rs
+{
+    // s 尚未被声明 无法访问
+    let s = "Hello"; // 在此处起 s 是有效的
+    // 声明后 在作用域内 你可以使用 s
+}
+// 作用域外 s 被销毁，使用 s 是不被允许的
+```
+
+在上面的代码中有两个重要的时间点：
+
+- s **进入作用域**时，它是有效的
+- 这一直持续到它**离开作用域**为止
+
+为了演示所有权的规则，我们需要引入一个存储在堆上的数据类型
+
+之前由字符串字面量创建字符串时，在编译阶段就知道其内容，这部分内容被硬编码存储在最终的编译结果中。
+
+但通过 `String` 创建的字符串，此类型管理被分配到堆上的数据，所以能够存储在编译时未知大小的文本：
+
+```rs
+let s = String::from("Hello");
+```
+
+双冒号 `::` 是一种运算符，它允许将特定的 `from` 函数置于 `String` 类型的命名空间（namespace）下，而不需要使用如 `string_from` 这样的名字。
+
+可以修改此类字符串：
+
+```rs
+let mut s = String::from("Hello");
+s.push_str(", World!"); // 在 s 后追加字面值
+println!("s: {}", s); // "Hello, World!"
+```
+
+不同于通过字符串字面量创建的字符串，此类字符串可以被修改。这是因为两种类型在内存上的处理不同：
+
+- 通过字符串字面量创建的字符串：被硬编码进最终的可执行文件中，这使得字符串字面值快速且高效，但代价是它的不可变性。
+- `String` 类型为了支持可变、可增长的文本片段，需要在堆上分配一块在编译时未知大小的内存来存放内容
+
+1. 必须在运行时向内存分配器（memory allocator）请求内存
+2. 需要一个当我们处理完 `String` 时将内存返回给分配器的方法
+
+对于 1. 我们已经通过 `String::from` 完成，然而对于 2. 在 Rust 中则是采用这样的策略：内存在拥有它的变量离开作用域时就被自动释放：
+
+```rs
+{
+    let s = String::from("Hello");
+} // 作用域结束
+// 此时 s 不再有效
+```
+
+这是一个将 `String` 需要的内存返回给分配器的很自然的位置：当 `s` 离开作用域的时候。当变量离开作用域，Rust 为我们调用一个特殊的函数。这个函数叫做 `drop`，在这里 `String` 的作者可以放置释放内存的代码。Rust 在结尾的 `}` 处自动调用 `drop`。
+
+以整型数据为例，同一数据可以被不同的变量绑定：
+
+```rs
+let x = 5;
+let y = x;
+```
+
+将 `5` 绑定到变量 `x`，生成一个值 `x` 的拷贝并绑定到变量 `y` 上，因为整型是已知固定大小的简单值，所以两个 `5` 都被放入了栈中。
+
+再举一个 `String` 版本的例子：
+
+```rs
+let s1 = String::from("Hello");
+let s2 = s1;
+```
+
+虽然做的事情是一样的，但内存分配上完全不同：
+
+![s1被标记为无效的内存表现](./Rust.assets/trpl04-04.svg)
+
+- 如果 `s1` 未被销毁，两个变量指向了同一个内存空间，存在二次释放的风险；
+- 如果重新开辟新的内存空间被开辟，会带来性能问题；
+
+因此，当执行 `s2 = s1` 时，不会有新的内存空间被开辟，`s1` 被标记为无效，不再允许被使用，`s2` 是有效的，当其离开自己的作用域就释放自己的内存。
+
+Rust 永远不会自动创建数据的“深拷贝”，因此任何自动的复制都会被认为是对运行时性能影响较小的。
+
+如果我们确实需要深度复制 `String` 中堆上的数据，而不仅仅是栈上的数据，可以显式调用 `clone` 方法。
+
+```rs
+let s1 = String::from("Hello");
+let s2 = s1.clone();
+
+println!("s1: {}, s2: {}", s1, s2); // s1 与 s2 都可用
+```
+
+在 Rust 中有一种 `Copy` trait 的特殊注解：如果一个类型实现了 `Copy` trait，那么一个旧的变量在将其赋值给其他变量后仍然可用。
+
+`Drop` trait 与 `Copy` trait 是互斥的，一个通用的鉴别类型是不是实现了 Copy trait 的方法是：
+
+任何一组简单标量值的组合都可以实现 `Copy`，任何不需要分配内存或某种形式资源的类型都可以实现 `Copy`，如：
+
+int、bool、float、char、tuple
+
 ### 引用与借用
 
 ### Slice 类型
 
+```rs
+fn main() {
+
+    {
+        let s = String::from("Hello");
+        takes_ownership(s);
+
+        // s had been moved
+        // println!("{}", s);
+
+        let x = 5;
+        makes_copy(x);
+        println!("{}", x); // x is still avaliable(copied)
+
+        fn takes_ownership(some_string: String) {
+            println!("{}", some_string);
+        }
+
+        fn makes_copy(some_integer: i32) {
+            println!("{}", some_integer);
+        }
+    }
+
+    {
+        let s1 = gives_ownership();
+        let s2 = String::from("Hello");
+        let s3 = takes_and_gives_back(s2);
+
+        // s2 不可访问 因其所有权已经转移给了 s3
+        println!("s1: {}, s3: {}", s1, s3);
+
+        // 向外界授予所有权
+        fn gives_ownership() -> String {
+            let some_string = String::from("yours");
+            some_string
+        }
+
+        // 获取所有权并向外授予
+        fn takes_and_gives_back(a_string: String) -> String {
+            a_string
+        }
+    }
+
+    {
+        let s1 = String::from("Hello");
+        let (s2, len) = calculate_length(s1);
+
+        println!("length of {} is {}.", s2, len);
+
+        // 计算 String 的长度并归还所有权
+        fn calculate_length(some_string: String) -> (String, usize) {
+            let size = some_string.len();
+            (some_string, size)
+        }
+    }
+
+    {
+        let s1 = String::from("Hello");
+        let len = calculate_length(&s1);
+
+        // 将 s1 的指针传递给函数
+        // 所有权不会被转移 在调用函数后 s1 仍然可用
+        println!("length of {} is {}.", s1, len);
+
+        fn calculate_length(s: &String) -> usize {
+            s.len()
+        }
+    }
+
+    {
+        let s = String::from("Hello");
+        change(&s);
+
+        fn change(some_string: &String) {
+            // 此处无法通过编译 因为借用的变量无法被修改
+            // some_string.push_str("SomeStuff");
+            println!("some_string: {}", some_string);
+        }
+    }
+
+    {
+        let mut s = String::from("Hello");
+        change(&mut s);
+        // 如果已经创建了一个变量的可变引用
+        // 就不能再创建对该变量的引用 这是为了防止 data race
+        println!("s had been changed to: {}.", s);
+        
+        fn change(some_string: &mut String) {
+            some_string.push_str("SomeStuff");
+        }
+    }
+
+    {
+        let mut s = String::from("Hello");
+
+        // 当然 在不同的作用域中 可以创建不同的可变引用
+        {
+            let r1 = &mut s;
+            r1.push_str("SomeStuff");
+        }
+        {
+            let r2 = &mut s;
+            r2.push_str("SomeStuff");
+        }
+
+        // 但是 不能同时拥有不可变引用与可变引用，或同时拥有多个可变引用
+        {
+            let _r1 = &s;
+            // let r2 = &mut s;
+            // println!("r1: {}, r2: {}", r1, r2);
+        }
+        {
+            let _r1 = &mut s;
+            // let r2 = &mut s;
+            // println!("r1: {}, r2: {}", r1, r2);
+        }
+
+        // 只要保证「不同时」即可
+        {
+            let r1 = &s;
+            println!("r1: {}", r1);
+
+            // r1 借用完毕 r2 可以正常引用并使用 s 的引用
+            let r2 = &mut s;
+            println!("r2: {}", r2);
+        }
+    }
+
+    {
+        // 悬垂引用 (Dangling References)
+        let reference_to_nothing = dangle();
+        println!("reference_to_nothing: {}", reference_to_nothing);
+
+        // fn dangle() -> &String {
+        //     // 创建字符串 s
+        //     let s = String::from("");
+
+        //     // 返回字符串的引用 &s
+        //     &s
+        // } // 作用域结束 s 被丢弃 占据的内存被释放
+
+        fn dangle() -> String {
+            let s = String::from("");
+
+            // 返回 String 后 所有权被移动出函数 因此值不会被释放
+            s
+        }
+    }
+
+    {
+        let words = String::from("Hello World!");
+        let result = first_word(&words);
+
+        println!("result: {}", result);
+
+        fn first_word(s: &String) -> usize {
+            let bytes = s.as_bytes();
+
+            for(i, &item) in bytes.iter().enumerate() {
+                if item == b' ' {
+                    return i;
+                }
+            }
+
+            s.len()
+        }
+    }
+
+    {
+        let s = String::from("Hello, World!");
+        let hello = &s[..5];
+        let world = &s[6..];
+        println!("{}, {}", hello, world);
+
+        let words = String::from("Hello, World!");
+        let result = first_word(&words);
+        println!("result: {}", result);
+
+        fn first_word(s: &String) -> &str {
+            let bytes = s.as_bytes();
+
+            for (i, &item) in bytes.iter().enumerate() {
+                if item == b' ' {
+                    return &s[..i];
+                }
+            }
+
+            &s[..]
+        }
+    }
+}
+```
+
 ## 结构体
+
+`struct` 是一个自定义数据类型，允许你包装和命名多个相关的值，从而形成一个有意义的组合。
 
 ### 结构体的定义与初始化
 
+下面的代码定义了一个用于存储用户账号信息的结构体：
+
+```rs
+struct User {
+    active: bool,
+    username: String,
+    email: String,
+    sign_in_count: u64
+}
+```
+
+要使用它，需要将其实例化：
+
+```rs
+fn main() {
+    let user1 = User {
+        active: true,
+        username: String::from("Ziu"),
+        email: String::from("ziu@email.com"),
+        sign_in_count: 1,
+    };
+}
+```
+
+默认情况下结构体中的值是不可变的，如果要修改某个字段，需要将**结构体实例标记为可变的**（Rust 不允许将某一个字段标记为可变的），那么可以通过 `.` 语法对实例中的值做修改：
+
+```rs
+fn main() {
+    let mut user1 = User {
+        active: true,
+        username: String::from("Ziu"),
+        email: String::from("ziu@email.com"),
+        sign_in_count: 1,
+    };
+
+    user1.sign_in_count += 1;
+}
+```
+
+可以通过字段初始化简写语法来创建实例：
+
+```rs
+fn build_user(email: String, username: String) -> User {
+    User {
+        active: true,
+        email,
+        username,
+        sign_in_count: 1
+    }
+}
+```
+
+用结构更新语法使用更少的代码来创建新 `User` 实例：
+
+创建一个新的 `User` 实例 `user2`，其中 `email` 字段是新的值，其余字段来自 `user1`。
+
+```rs
+fn main() {
+    let user2 = User {
+        email: String::from("user2@email.com"),
+        ..user1
+    };
+}
+```
+
+::: warning
+结构更新语法就像 `=` 赋值一样遵循所有权转移规则，在这个例子中，`user2` 被创建后我们就不能再使用 `user1` 了，这是因为 `user1` 的 `username` 字段中的 `String` 值被转移到了 `user2` 中。
+
+如果我们给 `user2` 的 `username` 与 `email` 都赋新值，只有 `active` 和 `sign_in_count` 被复用，那么 `user1` 仍可用。
+:::
+
+元组结构体（tuple structs）中可以通过 `struct` 关键字定义，但没有具体的字段名，只有字段的类型
+
+当你想给元组取一个名字，并使元组成为与其他元组不同的类型时，元组结构体是很有用的：
+
+```rs
+struct Color(i32, i32, i32);
+struct Point(i32, i32, i32);
+
+fn main() {
+    let black = Color(0, 0, 0);
+    let origin = Point(0, 0, 0);
+}
+```
+
+没有任何字段的类单元结构体，类似于 `()` 即元祖类型中的 unit 类型。
+
+常用语你想要在某个类型上实现 trait 但不需要在类型中存储数据时发挥作用。
+
+声明并实例化一个名为 `AlwaysEqual` 的 unit 结构的例子：
+
+```rs
+struct AlwaysEqual;
+
+fn main() {
+    let subject = AlwaysEqual;
+}
+```
+
+::: info
+结构体数据的所有权
+
+前面 `User` 的例子中，`username` 与 `email` 字段都持有 `String` 类型的数据而不是其引用。
+
+同时，结构体也可以存储被其他对象拥有的数据的引用，不过要这样做的话就必须引入**生命周期**这个概念。
+
+生命周期确保结构体引用的数据有效性和结构体本身保持一致。如果你尝试在结构体中存储一个引用而不指定生命周期将是无效的：
+
+```rs
+struct User {
+    active: bool,
+    username: &str,
+    email: &str,
+    sign_in_count: u64,
+}
+
+fn main() {
+    let user1 = User {
+        active: true,
+        username: "someusername123",
+        email: "someone@example.com",
+        sign_in_count: 1,
+    };
+}
+```
+
+执行编译时，编译器将会抛出错误：需要生命周期标识符
+:::
+
 ### 示例
 
+下面写一个计算长方形面积的程序来理解何时需要使用结构体：
+
+```rs
+fn main() {
+    let width = 30;
+    let height = 50;
+
+    println!(
+        "The area of the rectangle is {} square pixels.",
+        area(width, height)
+    );
+
+    fn area(width: u32, height: u32) -> u32 {
+        width * height
+    }
+}
+```
+
+通过元组给函数入参建立关联：
+
+```rs
+fn main() {
+    let rect1 = (30, 50);
+
+    println!(
+        "The area of the rectangle is {} square pixels.",
+        area(rect1)
+    );
+}
+
+fn area(dimensions: (u32, u32)) -> u32 {
+    dimensions.0 * dimensions.1
+}
+```
+
+用结构体给参数赋予更多意义，给参数添加语义化的标签：
+
+```rs
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
+
+    println!(
+        "The area of the rectangle is {} square pixels.",
+        area(&rect1)
+    );
+}
+
+fn area(rectangle: &Rectangle) -> u32 {
+    rectangle.width * rectangle.height
+}
+```
+
+借用结构体的所用权，将 `rect1` 的不可变引用传入 `area` 函数，通过 `.` 语法访问结构体字段不会移动字段的所有权。
+
+在调试的过程中，如果你尝试将结构体通过 `println!` 宏打印，运行代码时会抛出错误：
+
+```rs
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
+
+    println!("rect1 is {}", rect1);
+}
+```
+
+```sh
+error[E0277]: `Rectangle` doesn't implement `std::fmt::Display`
+```
+
+`println!` 宏能处理很多类型的格式，但当你使用 `{}` 占位符时，默认告诉 `println!` 使用被称为 `Display` 的格式：直接给终端用户查看的输出。
+
+基本类型都默认实现了 `Display`，因为值很简单，Rust 可以帮我们完成这部分实现。然而对于结构体的展示存在很多细节：
+
+- 是否需要结尾的逗号？
+- 需要打印出外层大括号吗？
+- 所有字段都应该显示吗？
+
+因此 Rust 并没有在结构体上提供 `Display` 实现来使用 `println!` 与 `{}` 占位符。
+
+你可以通过 `Debug` trait 输出格式打印结构体，将 `{}` 占位符替换为 `{:?}`：
+
+```rs
+println!("rect1 is {:?}", rect1);
+```
+
+同时，我们必须显式地为结构体开启这个调试功能：
+
+```rs {1}
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
+
+    println!("rect1 is {:?}", rect1);
+}
+```
+
+这会默认展示所有的结构体中的字段：
+
+```sh
+rect1 is Rectangle { width: 30, height: 50 }
+```
+
+当结构体变得更大，有一种更易读的占位符可以使用：`{:#?}`
+
+```rs
+    println!("rect1 is {:#?}", rect1);
+```
+
+这包含了更漂亮的换行与缩进，输出的调试信息更易读。
+
+另一种使用 `Debug` 格式打印数值的方法是 `dbg!` 宏，它接收一个表达式的所有权（与 `println!` 宏相反，后者接收的是引用）
+
+打印出代码中调用 `dbg!` 宏时所在的文件和行号以及该表达式的结果值，并返回该值得所有权。
+
+::: warning
+注意：调用 `dbg!` 宏会打印到标准错误控制台流（`stderr`），与 `println!` 不同，后者会打印到标准输出控制台流（`stdout`）。
+:::
+
+下面是使用 `dbg!` 宏的例子：
+
+```rs
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let scale = 2;
+    let rect1 = Rectangle {
+        width: dbg!(30 * scale),
+        height: 50,
+    };
+
+    dbg!(&rect1);
+}
+```
+
+```sh
+$ cargo run
+   Compiling rectangles v0.1.0 (file:///projects/rectangles)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.61s
+     Running `target/debug/rectangles`
+[src/main.rs:10] 30 * scale = 60
+[src/main.rs:14] &rect1 = Rectangle {
+    width: 60,
+    height: 50,
+}
+```
+
 ### 方法语法
+
+在前面的代码中，`area` 函数是单独实现的，但实际上 `area` 函数与结构体 `Rectangle` 是强相关的。
+
+这里涉及到 函数（function） 与 方法（method） 的不同：
+
+与函数不同的是，方法是在结构体的上下文被定义的（或者是枚举或 trait 对象的上下文）
 
 ## 枚举和模式匹配
 
