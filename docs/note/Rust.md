@@ -1512,6 +1512,138 @@ $ cargo run
 
 与函数不同的是，方法是在结构体的上下文被定义的（或者是枚举或 trait 对象的上下文）
 
+我们将前文中的 `area` 函数改写为定义于 `Rectangle` 结构体上的一个 `area` 方法：
+
+```rs
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+}
+
+fn main() {
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
+
+    println!(
+        "The area of the rectangle is {} square pixels.",
+        rect1.area()
+    );
+}
+```
+
+为了使函数定义于 `Rectangle` 的上下文中，我们使用 `impl` 关键字，在 `impl` 中的所有内容都将和 `Rectangle` 类型相关联。
+
+将 `area` 函数的参数 `rectangle: &Rectangle` 改为 `&self`，这本质上是 `self: &Self` 的缩写。在一个 `impl` 块中，`Self` 类型是 `impl` 块的类型的别名。
+
+- 方法的第一个参数必须有一个名为 `self` 的 `Self` 类型的参数；
+- 要修改调用方法的实例，可以写为：`&mut self` 以获得所有权；
+
+特别地，我们可以选择将方法的名称与结构中的一个字段相同，例如我们可以定义一个名为 `width` 的方法：
+
+```rs
+impl Rectangle {
+    fn width(&self) -> bool {
+        // 当 self.width > 0 时返回 true
+        self.width > 0
+    }
+}
+
+fn main() {
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
+
+    if rect1.width() {
+        println!("The rectangle has a nonzero width; it is {}", rect1.width);
+    }
+}
+```
+
+在使用 `width` 方法时，需要用 `()` 来调用它。
+
+你也可以将 `width` 方法仅仅返回 `self.width` 的值，这样就可以通过这个 getter 访问到 `self.width` 的值。
+
+下面我们编写一个带参数的方法 `can_hold` 用于检查一个 `Rectangle` 是否可以包含另一个 `Rectangle`：
+
+```rs
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+
+    fn width(&self) -> bool {
+        self.width > 0
+    }
+
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.height > other.height
+    }
+}
+
+fn main() {
+    let rec1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
+    let rec2 = Rectangle {
+        width: 10,
+        height: 40,
+    };
+
+    println!(
+        "The area of the rectangle is {} square pixels.",
+        rec1.area()
+    );
+    println!("rec1 can hold rec2: {}", rec1.can_hold(&rec2));
+}
+```
+
+我们给 `can_hold` 传入了第二个参数 `other`，它是一个 `Rectangle` 实例的不可变借用。
+
+在调用 `can_hold` 时，直接将 `Rectangle` 实例传入即可，这时所有权仍然被 `rec2` 保持，因此我们可以在调用完 `can_hold` 后继续使用 `rec2`。
+
+所有在 `impl` 块中定义的函数被称为 **关联函数**，因为它们与 `impl` 后面命名的类型相关。我们可以定义不以 `self` 为第一参数的关联函数（因此不是方法）。
+
+关联函数并不作用于一个实例，一个最好的关联函数例子就是 `String::from` 函数。
+
+不是方法的关联函数经常被用作返回一个结构体新实例的构造函数（名称通常为 `new`，但实际上 `new` 并不是一个关键字）。
+
+例如我们可以编写一个名为 `square` 的关联函数，它接收一个参数同时作为宽和高，通过 `square` 声明 `Rectangle` 时不必指定两次同样的值：
+
+```rs
+impl Rectangle {
+    fn square(size: u32) -> Self {
+        Rectangle {
+            width: size,
+            height: size,
+        }
+    }
+}
+
+fn main() {
+    let sq = Rectangle::square(30); // 创建一个 30*30 的正方形
+}
+```
+
+使用结构体名和 `::` 语法来调用这个关联函数。这个函数位于结构体的命名空间中，`::` 语法用于关联函数和模块创建的命名空间。
+
+每个结构体都允许拥有多个 `impl` 块，你可以在不同的 `impl` 中声明方法或关联函数，在后面的章节中会见到实用的多 `impl` 块的用例。
+
 ## 枚举和模式匹配
 
 ### 枚举的定义
