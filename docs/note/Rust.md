@@ -1648,6 +1648,344 @@ fn main() {
 
 ### 枚举的定义
 
+在前文中我们介绍了结构体，它可以将字段和数据聚合在一起：
+
+`Rectangle` 结构体中包含 `width` 和 `height` 两个字段，还可以包含方法。
+
+而枚举可以提供一种途径，用于声明某个值是一个集合中的一员：
+
+`Rectangle` 是一些形状的集合，例如：`Circle` 和 `Triangle`。
+
+下面的代码声明了一个枚举类型 `IpAddrKind`，它包含 `V4` 与 `V6` 两个成员：
+
+```rs
+enum IpAddrKind {
+    V4,
+    V6
+}
+```
+
+可以 `IpAddrKind` 枚举创建不同成员的实例：
+
+```rs
+let four = IpAddrKind::V4;
+let six = IpAddrKind::V6;
+```
+
+枚举的成员位于其标识符的命名空间中，并使用两个冒号分开。
+
+下面的例子中，枚举成员作为参数传递给 `route` 函数，不论类型是 `V4` 还是 `V6`：
+
+```rs
+fn route(ip_kind: IpAddrKind) {}
+
+route(IpAddrKind::V4);
+route(IpAddrKind::V6);
+```
+
+到目前为止，我们的枚举都是以**类型**形式存在的，并没有一个实际存储 IP 地址数据的地方，我们可以定义一个 `IpAddr` 结构体来完成这样的工作：
+
+```rs
+struct IpAddr {
+    kind: IpAddrKind,
+    address: String,
+}
+
+let home = IpAddr {
+    kind: IpAddrKind::V4,
+    address: String::from("127.0.0.1"),
+}
+
+let loopback = IpAddr {
+    kind: IpAddrKind::V6,
+    address: String::from("::1"),
+}
+```
+
+实际上，我们可以通过一种更为简洁的方式来表达相同的概念：
+
+只使用枚举，并将数据直接放进每个枚举成员中，而不是用结构体：
+
+```rs
+enum IpAddr {
+    V4(String),
+    V6(String),
+}
+
+let home = IpAddr::V4(String::from("127.0.0.1"));
+let loopback = IpAddr::V6(String::from("::1"));
+```
+
+这样，我们就不再需要额外的结构体来完成：将数据附加到枚举成员上 这件事了。
+
+另外，你也会发现，定义枚举成员的名字也变成了一个函数调用：`IpAddr::V4()` 获取一个 `String` 类型的参数，并返回 `IpAddr` 类型实例。
+
+用枚举来替代结构体还带来了另一个优势：可以给不同的枚举对象绑定不同的数据类型
+
+```rs
+enum IpAddr {
+    V4(u8, u8, u8, u8),
+    V6(String),
+}
+
+let home = IpAddr::V4(127, 0, 0, 1);
+let loopback = IpAddr::V6(String::from("::1"));
+```
+
+[标准库](https://doc.rust-lang.org/std/net/enum.IpAddr.html)是这样处理IP地址的：
+
+```rs
+struct Ipv4Addr {
+    // --snip--
+}
+
+struct Ipv6Addr {
+    // --snip--
+}
+
+enum IpAddr {
+    V4(Ipv4Addr),
+    V6(Ipv6Addr),
+}
+```
+
+另一个枚举的例子 `Message`：
+
+```rs
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+```
+
+我们当然可以用 `struct` 复写这样的枚举：
+
+```rs
+struct QuitMessage; // 类单元结构体
+struct MoveMessage {
+    x: i32,
+    y: i32,
+}
+struct WriteMessage(String); // 元组结构体
+struct ChangeColorMessage(i32, i32, i32); // 元组结构体
+```
+
+然而，这些结构体都有不同的类型，而枚举的不同成员是同一个类型。
+
+枚举和结构体另一个相似的地方是：
+
+- 结构体可以使用 `impl` 来定义方法
+- 枚举可以通过名为 `call` 的方法来定义
+
+```rs
+impl Message {
+    fn call(&self) {
+        // some code ...
+    }
+}
+
+let m = Message::Write(String::from("Hello"));
+m.call();
+```
+
+下面介绍一个标准库中常见且非常实用的枚举 `Option`。
+
+`Option` 类型应用广泛，是因为它编码了一个普遍的场景：一个值要么有值要么没值。
+
+例如：请求一个非空列表的第一项，会得到一个值；请求一个空的列表，那么就什么都不会得到。
+
+从类型系统的角度来表达这个概念，意味着编译器需要检查是否处理了所有应该处理的所有情况。
+
+Rust 并没有其他语言中空值（`null`）的功能，在有空值的语言中，变量总是这两种状态之一：空值和非空值。
+
+在 Rust 中存在一个可以编码存在或不存在概念的枚举：`Option<T>`，被定义在标准库中，并且包含在了 prelude 中，这意味着你不需要显式将其引入作用域。
+
+```rs
+enum Option<T> {
+    None,
+    Some(T),
+}
+```
+
+甚至，你不需要 `Option::` 的前缀来使用 `Some` 和 `None`，下面是一些 `Option` 的例子：
+
+```rs
+let some_number = Some(5);
+let some_char = Some('e');
+let absent_number: Option<i32> = None;
+```
+
+`some_number` 和 `some_char` 的类型由 Rust 自动推断，而 `absent_number` 则是通过泛型指定告诉 Rust 的。
+
+编译器不允许像一个肯定有效的值那样使用 `Option<T>`，因为本质上 `Option<T>` 与 `T` 是不同的类型：
+
+```rs
+// 此代码无法通过编译
+let x: i8 = 5;
+let y: Option<i8> = Some(5);
+
+let sum = x + y; // ❌
+```
+
+编译器确保 `i8` 类型始终有值，不需要做空值检查。只有当使用如 `Option<i8>` 这样的值的时才会担心可能没有值，而编译器会确保我们在使用值之前处理了为空的情况。
+
+换句话说，在对 `Option<i8>` 进行运算之前，必须将其转换为 `T`，这能帮助我们捕获到空值最常见的问题之一：假设某值不为空但实际上为空的情况。
+
+这样就消除了错误地假设一个非空值的风险：为了拥有一个可能为空的值，你必须要显式地将其放入对应类型的 `Option<T>` 中，当你要使用这个值的时候，必须明确处理值为空的情况。
+
+只要一个值不是 `Option<T>` 类型，你就**可以**安全第认定它的值不为空。
+
+更多地关于 `Option<T>` 的用法，可以看[它的文档](https://doc.rust-lang.org/std/option/enum.Option.html)。
+
+如果你希望一些代码仅在有值 `Some(T)` 时才运行，并允许这些代码使用其中的 `T`，或者是你希望当值为 `None` 时做一些错误处理时，可以试试用 `match`。
+
+下文中我们将介绍 `match` 控制流结构，`match` 表达式是一个处理枚举的控制流结构：它会根据枚举的成员运行不同的代码，这些代码可以使用匹配到值中的数据。
+
 ### match 控制流结构
 
+Rust 拥有一个名为 `match` 的极为强大的控制流运算符，它允许我们将一个值与一系列的模式相比较，并根据匹配的模式执行相应的代码。
+
+模式（pattern）可以由字面值、变量、通配符和许多其他内容组成，`match` 的力量来源于模式的表现力与编译器检查，它确保了所有可能得情况都能得到处理。
+
+把 `match` 表达式想象成某种硬币分类器：硬币滑入有着不同大小孔洞的轨道，每个硬币都会调入符合其大小的孔洞中。同样地，值也会通过 `match` 的每一个模式，并且在遇到第一个符合的模式时，值会进入相关联的代码块，并在执行中被使用。
+
+一个验钞机的例子：
+
+```rs
+// 硬币 => 美分
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter,
+}
+
+fn value_in_cents(coin: Coin) -> u8 {
+    match coin {
+        Coin::Penny => 1,
+        Coin::Nickel => 5,
+        Coin::Dime => 10,
+        Coin::Quarter => 25,
+    }
+}
+```
+
+`match` 中的匹配分支，可以绑定匹配的模式的部分值：
+
+```rs
+#[derive(Debug)] // 这样可以立刻看到州的名称
+enum UsState {
+    Alabama,
+    Alaska,
+    // --snip--
+}
+
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter(UsState),
+}
+```
+
+这里我们给 `Coin::Quarter` 传入州名，以区分不同州对 25 美分的特殊设计。
+
+在 `match` 表达式中，一旦匹配了此模式，变量 `state` 变量将会绑定对应的州值，随后就可以在当前匹配分支中使用 `state`：
+
+```rs
+value_in_cents(Coin::Quarter(UsState::Alaska));
+
+fn value_in_cents(coin: Coin) -> u8 {
+    match coin {
+        Coin::Penny => 1,
+        Coin::Nickel => 5,
+        Coin::Dime => 10,
+        Coin::Quarter(state) => {
+            println!("State quarter from {:?}!", state);
+            25
+        }
+    }
+}
+```
+
+输出为：
+
+```sh
+> State quarter from Alaska!
+```
+
+下面我们尝试用 `match` 来匹配 `Option<T>` 的值：
+
+编写一个函数，它获取一个 `Option<i32>`，如果其有值，则将值 +1，如果没有值，则返回 `None`，不执行任何操作。
+
+```rs
+fn plus_one(x: Option<i32>) -> Option<i32> {
+    match x {
+        None => None,
+        Some(i) => Some(i + 1),
+    }
+}
+
+let five = Some(5);
+let six = plus_one(five);
+let none = plus_one(None);
+```
+
+传入 `Some(5)` 后，`match` 表达式匹配到了 `Some(i)` 这一模式，进入分支，在分支中获得 `T` 的值也就是 `5`，将其加一后返回一个 `Some(6)`。
+
+::: warning
+Rust 中的匹配是穷尽的（exhaustive）
+
+在使用 `match` 表达式时，你必须为值的每一种模式都编写一个分支：
+
+```rs
+// 此代码无法通过编译
+fn plus_one(x: Option<i32>) -> Option<i32> {
+    match x {
+        Some(i) => Some(i + 1),
+    }
+}
+```
+
+由于缺少了对 `None` 情况的处理，编译会报错：
+
+```sh
+> error[E0004]: non-exhaustive patterns: `None` not covered
+```
+
+实际上这也使我们免于假设拥有一个实际上为空的值。
+:::
+
+可以使用 `_` 作为占位符，作为兜底模式，匹配所有未被其之前匹配到的值：
+
+```rs
+let dice_roll = 9;
+match dice_roll {
+    3 => do_something(),
+    7 => do_something_else(),
+    _ => reroll() // 🥳 匹配所有剩余的情况
+}
+
+fn do_something() {}
+fn do_something_else() {}
+fn reroll() {}
+```
+
+同时，这个例子满足前文中 Rust 的穷举性要求，因为我们在最后一个分支中明确忽略了其他值，而没有忽略任何值。
+
+可以用单元值替换空操作：
+
+```rs
+match dice_roll {
+    3 => do_something(),
+    7 => do_something_else(),
+    _ => () // 单元值（本质是空元组）
+}
+```
+
+这样在未匹配 3 或 7 时将不会做任何事情。
+
 ### if let 简洁控制流
+
