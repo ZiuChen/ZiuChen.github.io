@@ -1989,3 +1989,200 @@ match dice_roll {
 
 ### if let 简洁控制流
 
+在某些情况下，我们只关心 `match` 表达式中某一种情况后执行的效果，这时可以使用 `if let` 语法来简化原本冗余的 `match`：
+
+```rs
+let config_max = Some(3u8);
+match config_max {
+    Some(max) => println!("The maximum is configured to be {}", max);
+}
+```
+
+使用 `if let` 语法简化后的代码：
+
+```rs
+let config_max = Some(3u8);
+if let Some(max) = config_max {
+    println!("The maximum is configured to be {}", max);
+}
+```
+
+`if let` 语法通过等号分隔的一个模式和一个表达式，它的工作方法与 `match` 相同：
+
+- `Some(max)` 是一个模式，`max` 绑定为 `Some` 中的值；
+- 模式被匹配时，分支被执行，可以在 `if let` 代码块中使用 `max`。
+
+换句话说，可以认为 `if let` 是 `match` 的语法糖，当它的值匹配时执行代码而忽略所有其他值。
+
+可以在 `if let` 中包含一个 `else`。`else` 块中的代码与 `match` 表达式中的 `_` 分支块中的代码相同。
+
+我们用先前的 `match` 例子改写，使用 `if let` 与 `else` 来实现：
+
+```rs
+let mut count = 0;
+if let Coin::Quarter(state) = coin {
+    println!("State quarter from {:?}!", state);
+} else {
+    count += 1;
+}
+```
+
+## 使用包、Crate 和模块管理不断增长的项目
+
+编写大型项目中，一般会将代码分解为多个模块盒多个文件来组织。
+
+一个包可以包含多个二进制 crate 项和一个可选的 crate 库，伴随着包的增长，你可以将包中的部分代码提取出来，做成独立的 crate，将这些 crate 作为外部依赖项。
+
+- 包（Package）：Cargo 的一个功能，它允许你构建、测试和分享 crate。
+- **Crates**：一个模块的树形结构，它形成了库或二进制项目。
+- **模块**（Module）和 **use**：允许你控制作用域和路径的私有性。
+- **路径**（path）：一个命名例如结构体、函数或模块等项的方式
+
+### 包和 Crate
+
+crate 是 Rust 在编译时的最小的代码单位。如果你用 `rustc` 而不是 `cargo` 来编译一个文件，编译器还是会将那个文件认作一个 crate。
+
+crate 可以包含模块，模块可以定义在其他文件，然后和 crate 一起编译。
+
+crate 有两种形式：二进制和库：
+
+- 二进制项可以被编译为可执行程序，比如一个命令行程序或者一个服务器。
+  - 它必须有一个 `main` 函数来定义当程序被执行时的时候所需要做的事情。
+- 库 并没有 `main` 函数，它们也不会被编译为可执行程序，它们提供一些诸如函数之类的东西，使其他项目也能使用这些东西。
+
+crate root 是一个源文件，Rust 编译器以它为起点，并构成你的 crate 根模块。
+
+包（Package）是提供一系列功能的一个或多个 crate。一个包会包含一个 Cargo.toml 文件，阐述如何去构建这些 crate。Cargo 就是一个包含构建你代码的二进制项的包。Cargo 也包含这些二进制项所依赖的库。其他项目也能用 Cargo 库来实现与 Cargo 命令行程序一样的逻辑。
+
+包中可以包含至多一个库 crate（library crate）。包中可以包含任意多个二进制 crate（binary crate），但是必须至少包含一个 crate（无论是库还是二进制的）；
+
+```sh
+cargo new my-project
+```
+
+### 定义模块来控制作用域和私有性
+
+下面解释一下模块、路径、`use` 关键词和 `pub` 关键词如何在编译器中工作：
+
+- 从 crate 根节点开始
+  - 当编译一个 crate，编译器首先在 crate 根文件（库 crate 通常是 *src/lib.rs*，二进制 crate 通常是 *src/main.rs*）
+- 声明模块
+  - 在 crate 根文件中，你可以声明一个新模块，例如：`mod garden;` 声明了一个名为 `garden` 的模块。编译器会在下列路径中寻找模块代码：
+    - 内联，在大括号中，当 `mod garden` 后方不是一个分号而是一个大括号（`mod garden {}`）
+    - 在文件 *src/garden.rs*
+    - 在文件 *src/garden/mod.rs*
+- 声明子模块
+  - 在除了 crate 根节点以外的其他文件中，你可以定义子模块，例如你可能在 *src/garden.rs* 中定义了 `mod vegetables;`。编译器会在父模块命名的目录中继续寻找子模块代码：
+    - 内联，在大括号中，当 `mod vegetables` 后方不是一个分号而是一个大括号
+    - 在文件 *src/garden/vegetables.rs*
+    - 在文件 *src/garden/vegetables/mod.rs*
+- 模块中的代码路径
+  - 一旦一个模块是你 crate 的一部分，你可以在隐私规则允许的前提下，从同一个 crate 内的任意地方，通过代码路径引用该模块的代码。
+  - 例如：一个 garden vegetables 模块下的 `Asparagus` 类型可以在 `crate::garden::vegetables::Asparagus` 被找到。
+- 私有 vs 公用
+  - 一个模块里的代码默认对其父模块私有。为了让一个模块公用，应当在声明时使用 `pub mod` 代替 `mod`。为了使一个公用模块的内部成员公用，应当在声明前使用 `pub`。
+- `use` 关键字
+  - 在一个作用域内，`use` 关键字创建了一个成员的快捷方式，用来减少长路径的重复。
+  - 在任何可以引用 `crate::garden::vegetables::Asparagus` 的作用域，你可以通过 `use crate::garden::vegetables::Asparagus;` 创建一个快捷方式，随后你在作用域中就可以直接使用 `Asparagus` 来使用该类型。
+
+::: code-group
+```rs [main.rs]
+// src/main.rs
+use crate::garden::vegetables::Asparagus;
+
+pub mod garden;
+
+fn main() {
+    let plant = Asparagus {};
+    println!("I'm growing {:?}!", plant);
+}
+
+```
+
+```rs [garden.rs]
+// src/garden.rs
+pub mod vegetables;
+```
+
+```rs [vegetables.rs]
+// src/garden/vegetables.rs
+#[derive(Debug)]
+pub struct Asparagus {}
+```
+:::
+
+在模块中对相关代码进行分组
+
+模块可以让我们将一个 crate 中的代码进行分组，以提高可读性和可重用性。因为第一个模块中的代码默认是私有的，所以还可以利用模块控制项的私有性。
+
+```rs
+// src/lib.rs
+mod front_of_house {
+    mod hosting {
+        fn add_to_waitlist() {}
+
+        fn seat_at_table() {}
+    }
+
+    mod serving {
+        fn take_order() {}
+
+        fn serve_order() {}
+
+        fn take_payment() {}
+    }
+}
+```
+
+模块定义以 `mod` 开始，然后指定模块的名字：`front_of_house`。
+
+在模块内，我们还可以定义其他的模块：`hosting` 和 `serving` 模块。
+
+模块中还可以保存一些定义的其他项，如结构体、枚举、常量、特性、函数。
+
+这样的结构组成了一个模块树：
+
+- crate
+  - front_of_house
+    - hosting
+      - add_to_waitlist
+      - seat_at_table
+    - serving
+      - take_order
+      - serve_order
+      - take_payment
+
+Rust 在模块树中找到一个项的位置，需要知道引用模块的路径：
+
+- 绝对路径
+  - 以 crate 根开头的全路径；
+  - 对于外部 crate 的代码，是以 crate 名开头的绝对路径
+  - 对于当前 crate 的代码，则以 `crate` 开头
+- 相对路径
+  - 从当前模块开始，以 `self`、`super` 或定义在当前模块中的标识符开头
+
+绝对路径和相对路径都后跟一个或多个由双冒号（`::`）分割的标识符：
+
+以之前的例子为例，我们希望在模块中调用 `add_to_waitlist` 函数：
+
+```rs
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+pub fn eat_at_restaurant() {
+    // 绝对路径
+    crate::front_of_house::hosting::add_to_waitlist();
+
+    // 相对路径
+    front_of_house::hosting::add_to_waitlist();
+}
+```
+
+代码中使用 `pub` 关键字声明 `hosting` 模块是一个公共模块、模块内的 `add_to_waitlist` 函数是一个公共函数。父模块可以访问到公共子模块中的公共 `add_to_waitlist` 函数。
+
+
+
+
