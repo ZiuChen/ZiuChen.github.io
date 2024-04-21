@@ -2183,6 +2183,264 @@ pub fn eat_at_restaurant() {
 
 代码中使用 `pub` 关键字声明 `hosting` 模块是一个公共模块、模块内的 `add_to_waitlist` 函数是一个公共函数。父模块可以访问到公共子模块中的公共 `add_to_waitlist` 函数。
 
+::: tip
+二进制和库 crate 包的最佳实践
 
+我们提到过包可以同时包含一个 *src/main.rs* 二进制 crate 根和一个 *src/lib.rs* 库 crate 根，并且这两个 crate 默认以包名来命名。通常这种包含二进制 crate 和库 crate 的模式的包，在二进制 crate 中只有足够的代码来启动一个可执行文件，在可执行文件中调用库 crate 的代码。
 
+模块树应当定义在 *src/lib.rs* 中，这样通过以包名开头的路径，公有项就可以在二进制 crate 中使用。二进制 crate 就完全变成了同其他外部 crate 一样的库 crate 的用户：它只能使用共有 API。
+:::
+
+我们可以在路径的开头使用 `super`，从父模块开始构建相对路径，而不是从当前模块或者根开始。这类似以 `..` 语法开始一个文件系统路径。使用 `super` 允许我们引用父模块中的已知项目。
+
+这带来一个好处：当前模块与父模块关联得更紧密，某天父模块可能要移动到模块树的其他位置时，前模块不必做任何调整。
+
+```rs {6}
+fn deliver_order() {}
+
+mod back_of_house() {
+    fn fix_incorrect_order() {
+        cook_order();
+        super::deliver_order();
+    }
+
+    fn cook_order() {}
+}
+```
+
+可以直接在子模块中通过 `super::deliver_order()` 调用父模块中的 `deliver_order` 函数。
+
+我们可以使用 `pub` 将结构体或枚举标记为公有，但是结构体中的字段依然是私有的，需要我们单独决定某些字段是否公有。
+
+```rs
+mod back_of_house {
+    pub struct Breakfast {
+        pub toast: String,
+        seasonal_fruit: String,
+    }
+
+    impl Breakfast {
+        pub fn summer(toast: &str) -> Breakfast {
+            Breakfast {
+                toast: String::from(toast),
+                seasonal_fruit: String::from("peaches"),
+            }
+        }
+    }
+}
+
+pub fn eat_at_restaurant() {
+    let mut meal = back_of_house::Breakfast::summer("Rye"); // 黑麦面包
+
+    mea.toast = String::from("Wheat"); // 小麦面包
+    println!("{}", meal.toast);
+
+    // 不允许访问私有字段
+    // meal.seasonal_fruit = String::from("blueberries");
+}
+```
+
+如果 `Breakfast` 没有暴露出 `summer` 这个方法，那么我们将无法创建 `Breakfast` 实例，因为 `seasonal_fruit` 这个字段是私有的，我们不能设置它的值。
+
+如果我们将枚举设为公有，那么它的所有成员都将变为公有：
+
+```rs
+mod back_of_house {
+    pub enum Appetizer {
+        Soup,
+        Salad,
+    }
+}
+
+pub fn eat_at_restaurant() {
+    let order1 = back_of_house::Appetizer::Soup;
+    let order2 = back_of_house::Appetizer::Salad;
+}
+```
+
+### 使用 use 关键字将路径引入作用域
+
+先看看没有 `use` 关键字的世界：
+
+```rs {7}
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+pub fn eat_at_restaurant() {
+    front_of_house::hosting::add_to_waitlist();
+}
+```
+
+必须通过 `模块名:子模块名:方法名` 才能调用到模块内的函数，可以用 `use` 关键字来简化这一操作：
+
+```rs {1,4}
+use crate::front_of_house::hosting;
+
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist();
+}
+```
+
+上面的代码中，路径被简化为了 `hosting`，现在 `hosting` 就在作用域中可用了
+
+::: warning
+注意 `use` 只能创建 `use` 所在的特定作用域内的短路径。
+
+下例中 `eat_at_restaurant` 函数移动到了一个叫 `customer` 的子模块，这又是一个不同于 `use` 语句的作用域，所以函数体不能编译。
+:::
+
+```rs
+// 此代码无法通过编译
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+use crate::front_of_house::hosting;
+
+mod customer {
+    pub fn eat_at_restaurant() {
+        hosting::add_to_waitlist();
+    }
+}
+```
+
+可以通过两种方法修改代码让其可以正常编译：
+
+- 将 `use` 调用移动到子模块 `consumer` 中；
+- 在子模块 `consumer` 中通过 `super::hosting` 引用父模块中的短路径。
+
+在引入第三方 crate 时，一个通常的约定是：
+
+- 引入的是函数时，需要在调用函数时指定父模块，以表明函数并不是在本地被定义的；
+  - 要引入两个模块的同名函数时，父模块可以帮助我们区分它们
+- 引入的是结构体、枚举时，习惯指定它们的完整路径。
+
+```rs
+// 将 `HashMap` 引入作用域的习惯用法
+use std::collections:HashMap;
+
+fn main() {
+    let mut map = HashMap::new();
+    map.insert(1, 2);
+}
+```
+
+另外，如果你真的希望从两个模块中引入同名函数，可以使用 `as` 关键字提供新的名称：
+
+```rs
+use std::fmt::Result;
+use std::io::Result as IoResult;
+
+fn func1() -> Result {
+    // ...
+}
+
+fn func2() -> IoResult<()> {
+    // ...
+}
+```
+
+使用 `pub use` 重导出名称：
+
+```rs
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+// 这里将 hosting 重导出了
+pub use crate::front_of_house::hosting;
+
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist();
+}
+```
+
+在重导出之前，外部如果要调用 `add_to_waitlist` 函数，需要：`restaurant::front_of_house::hosting::add_to_waitlist()`。在完成重导出后，只需要 `restaurant::hosting::add_to_waitlist()` 即可。
+
+使用外部包一样可以使用 `use` 来将其引入到当前作用域。
+
+下面的代码将 `rand` 包中的 `Rng` trait 引入作用域，并调用 `rand::thread_rng` 函数：
+
+```rs
+use rand:Rng;
+fn main() {
+    let secret_number = rand::thread_rng().gen_range(1..=100);
+}
+```
+
+需要注意的是，`std` 标准库对于你的包来说也是一个外部 crate，但因为标准库随着 Rust 语言一同分发，因此无需修改 *Cargo.toml* 来引入 `std`，但需要通过 `use` 将标准库中定义的内容引入项目包中的作用域来使用它们，例如我们常用的 `HashMap`：
+
+```rs
+use std::collections::HashMap;
+```
+
+当我们需要重复从 `std` 导入时，可以使用 `{}` 嵌套路径来消除重复的 `use`：
+
+```rs
+use std::cmp::Ordering; // [!code --]
+use std::io; // [!code --]
+use std::{cmp::Ordering, io}; // [!code ++]
+```
+
+可以在嵌套路径中使用 `self` 代表要引入当前的路径内容：
+
+```rs
+use std::io; // [!code --]
+use std::io::Write; // [!code --]
+use std::io::{self, Write}; // [!code ++]
+```
+
+通过 glob 运算符将**所有**的公有定义引入作用域：
+
+```rs
+use std::collections::*;
+```
+
+::: warning
+这个 `use` 语句将 `std::collections` 中定义的所有公有项引入当前作用域。使用 `glob` 运算符时请多加小心！
+
+Glob 会使得我们难以推导作用域中有什么名称和它们是在何处定义的。
+:::
+
+glob 运算符常常用于测试模块 `tests` 中，这时会将所有内容引入作用域。
+
+将模块拆分为多个文件
+
+在一个文件中定义多个模块时，随着模块内容增长，文件会变得更大且代码不容易阅读，此时我们可以将模块拆分到不同的文件中。
+
+crate 的根文件是 *src/lib.rs*，我们可以渐进式地将模块拆分到各自的文件中。
+
+```rs
+// src/front_of_house.rs
+pub mod hosting {
+    pub fn add_to_waitlist() {}
+}
+```
+
+只需要在模块树中的某处使用一次 `mod` 声明就可以加载这个文件。一旦编译器知道了这个文件是项目的一部分（并且通过 `mod` 语句的位置就知道了代码在代码树中的位置），项目中的其他文件应该使用其所声明的位置的路径来引用那个文件的代码。
+
+换句话说，`mod` 不是你可能会在其他编程语言中看到的 “include” 操作。
+
+下面我们将 `hosting` 模块提取到单独的文件中，因为 `hosting` 是 `front_of_house` 的子模块而不是根模块：
+
+::: code-group
+
+```rs [front_of_house.rs]
+// src/front_of_house.rs
+pub mod hosting;
+```
+
+```rs [hosting.rs]
+// src/front_of_house/hosting.rs
+pub fn add_to_waitlist() {}
+```
+
+:::
 
