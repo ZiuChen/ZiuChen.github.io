@@ -4,9 +4,9 @@
 
 [Github Page](https://ziuchen.github.io/)
 
-[Gitee Page](https://ziuchen.gitee.io/)
-
 [Vercel](https://ziuchen.vercel.app/)
+
+[Cloudflare Pages](https://ziuchen.pages.dev/)
 
 ```sh
 # 安装依赖
