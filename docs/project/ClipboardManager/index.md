@@ -7,13 +7,10 @@ aside: false
 
 <script setup>
   import url from './assets/logo.png'
-  import img1 from './assets/img1.png'
-  import img2 from './assets/img2.png'
-  import img3 from './assets/img3.png'
-  import img4 from './assets/img4.png'
-  import img5 from './assets/img5.png'
-  import img6 from './assets/img6.png'
-  import img7 from './assets/img7.png'
+  import img1 from './assets/img_1.png'
+  import img2 from './assets/img_2.png'
+  import img3 from './assets/img_3.png'
+  import img4 from './assets/img_4.png'
   const titleInfo = {
     subTitle: '✨ 强大的剪贴板管理工具。',
     logo: url,
@@ -29,9 +26,6 @@ aside: false
     { src: img2 },
     { src: img3 },
     { src: img4 },
-    { src: img5 },
-    { src: img6 },
-    { src: img7 },
   ]
 </script>
 
