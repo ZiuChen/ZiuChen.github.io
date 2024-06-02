@@ -14,4 +14,6 @@ footer: false
 import DemoComponent from './Index.vue'
 </script>
 
-<DemoComponent />
+<ClientOnly>
+  <DemoComponent />
+</ClientOnly>

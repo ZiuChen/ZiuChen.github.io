@@ -11,4 +11,6 @@ outline: false
 import DemoComponent from './Inner.vue'
 </script>
 
-<DemoComponent />
+<ClientOnly>
+  <DemoComponent />
+</ClientOnly>
