@@ -9,7 +9,6 @@ export default defineConfig({
   lastUpdated: true,
   head: [['link', { rel: 'icon', href: '/logo.png' }]],
   markdown: {
-    lineNumbers: true,
     math: true,
     image: {
       lazyLoading: true
