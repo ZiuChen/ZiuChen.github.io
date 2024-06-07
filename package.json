@@ -6,9 +6,9 @@
     "preview": "vitepress preview docs"
   },
   "devDependencies": {
-    "@types/node": "^20.13.0",
+    "@types/node": "^20.14.2",
     "@vitejs/plugin-vue-jsx": "^4.0.0",
-    "ant-design-vue": "^4.2.1",
+    "ant-design-vue": "^4.2.2",
     "markdown-it-mathjax3": "^4.3.2",
     "vite": "^5.2.12",
     "vue": "^3.4.27"
@@ -16,6 +16,6 @@
   "dependencies": {
     "medium-zoom": "^1.1.0",
     "swiper": "^11.1.4",
-    "vitepress": "1.2.2"
+    "vitepress": "1.2.3"
   }
 }
