@@ -11,8 +11,9 @@ aside: false
   import img2 from './assets/img_2.png'
   import img3 from './assets/img_3.png'
   import img4 from './assets/img_4.png'
+  import img5 from './assets/img_5.png'
   const titleInfo = {
-    subTitle: '✨ 强大的剪贴板管理工具。',
+    subTitle: '✨ 更强大的剪贴板管理工具。',
     logo: url,
     linkList: [
       { content: '⭐ 开源代码', target: 'https://github.com/ZiuChen/ClipboardManager' },
@@ -26,6 +27,7 @@ aside: false
     { src: img2 },
     { src: img3 },
     { src: img4 },
+    { src: img5 },
   ]
 </script>
 
