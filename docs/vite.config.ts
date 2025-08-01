@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite'
-import vueJsx from '@vitejs/plugin-vue-jsx'
 
 export default defineConfig(() => ({
   server: {
@@ -9,6 +8,5 @@ export default defineConfig(() => ({
         changeOrigin: true
       }
     }
-  },
-  plugins: [vueJsx()]
+  }
 }))

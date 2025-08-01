@@ -17,6 +17,6 @@
     "baseUrl": "."
   },
 
-  "include": ["docs/.vitepress/**/*.ts", "docs/.vitepress/**/*.tsx", "docs/vite.config.ts"],
+  "include": ["docs/.vitepress/**/*.ts", "docs/vite.config.ts"],
   "exclude": ["node_modules", "dist"]
 }

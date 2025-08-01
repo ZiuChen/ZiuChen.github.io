@@ -1,3 +1,4 @@
+import { h } from 'vue'
 import { Button, notification } from 'ant-design-vue'
 
 let lastHashmap: any = null
@@ -43,11 +44,15 @@ async function loop() {
     notification.info({
       message: '文档有更新',
       description: '请刷新页面以获取最新文档',
-      btn: (
-        <Button type="primary" onClick={() => window.location.reload()}>
-          刷新页面
-        </Button>
-      )
+      btn: () =>
+        h(
+          Button,
+          {
+            type: 'primary',
+            onClick: () => window.location.reload()
+          },
+          '刷新页面'
+        )
     })
 
     localStorage.setItem('last-check-update', new Date().getTime().toString())
