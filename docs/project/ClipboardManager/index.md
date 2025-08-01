@@ -6,12 +6,12 @@ aside: false
 ---
 
 <script setup>
-  import url from './assets/logo.png'
-  import img1 from './assets/img_1.png'
-  import img2 from './assets/img_2.png'
-  import img3 from './assets/img_3.png'
-  import img4 from './assets/img_4.png'
-  import img5 from './assets/img_5.png'
+  import url from './assets/logo.webp'
+  import img1 from './assets/img_1.webp'
+  import img2 from './assets/img_2.webp'
+  import img3 from './assets/img_3.webp'
+  import img4 from './assets/img_4.webp'
+  import img5 from './assets/img_5.webp'
   const titleInfo = {
     subTitle: '✨ 更强大的剪贴板管理工具。',
     logo: url,

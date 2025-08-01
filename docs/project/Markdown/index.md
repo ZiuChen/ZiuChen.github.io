@@ -6,10 +6,10 @@ aside: false
 ---
 
 <script setup>
-  import url from './assets/logo.png'
-  import img1 from './assets/img1.png'
-  import img2 from './assets/img2.png'
-  import img3 from './assets/img3.png'
+  import url from './assets/logo.webp'
+  import img1 from './assets/img1.webp'
+  import img2 from './assets/img2.webp'
+  import img3 from './assets/img3.webp'
   const titleInfo = {
     subTitle: '✨ 强大的Markdown编辑器',
     logo: url,

@@ -153,7 +153,7 @@ console.log(classof({})) // Object
 
 `Object.prototype.toString()`被调用时，会进行如下步骤：
 
-![Object.prototype.toString()](./assets/Object.prototype.toString.png)
+![Object.prototype.toString()](./assets/Object.prototype.toString.webp)
 
 在ES6里，之前的内部属性 `[[Class]]` 不再使用，取而代之的是一系列的 internal slot
 

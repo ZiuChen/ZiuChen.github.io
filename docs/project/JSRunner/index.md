@@ -6,11 +6,11 @@ aside: false
 ---
 
 <script setup>
-  import url from './assets/logo.png'
-  import img1 from './assets/img1.png'
-  import img2 from './assets/img2.png'
-  import img3 from './assets/img3.png'
-  import img4 from './assets/img4.png'
+  import url from './assets/logo.webp'
+  import img1 from './assets/img1.webp'
+  import img2 from './assets/img2.webp'
+  import img3 from './assets/img3.webp'
+  import img4 from './assets/img4.webp'
   const titleInfo = {
     subTitle: '✨ JavaScript运行器 支持多种运行环境 快速验证代码逻辑',
     logo: url,

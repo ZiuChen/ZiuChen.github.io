@@ -1461,7 +1461,7 @@ FC全称是 Formatting Context， 译作格式化上下文。元素在标准流�
 }
 ```
 
-![](CSS.assets/BFC-1.jpg)
+![](CSS.assets/BFC-1.webp)
 
 我们为两个元素分别设置垂直方向的`margin`，此时BFC的规则就被触发了：**在同一个BFC中**，垂直方向的`margin`会发生折叠，取二者较大的值，真正的边距变成了`20px`，而不是臆想中的`30px`
 
@@ -1478,7 +1478,7 @@ FC全称是 Formatting Context， 译作格式化上下文。元素在标准流�
 }
 ```
 
-![](CSS.assets/BFC-2.jpg)
+![](CSS.assets/BFC-2.webp)
 
 这两个盒子位于同一个BFC之中进行布局：`<html>`标签形成的BFC
 
@@ -1550,7 +1550,7 @@ FC全称是 Formatting Context， 译作格式化上下文。元素在标准流�
 }
 ```
 
-![](CSS.assets/BFC-3.jpg)
+![](CSS.assets/BFC-3.webp)
 
 我们不能简单的从现象归纳本质：*BFC让浮动元素向父级元素汇报了高度，所以解决了高度塌陷的问题*
 
@@ -1593,7 +1593,7 @@ FC全称是 Formatting Context， 译作格式化上下文。元素在标准流�
 
 给`.container`设置`overflow: auto;`，让`.container`创建一个新的BFC，这样之前的高度塌陷问题也能够被解决
 
-![](CSS.assets/BFC-4.jpg)
+![](CSS.assets/BFC-4.webp)
 
 官方文档中是这样解释的：
 

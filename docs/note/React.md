@@ -1108,7 +1108,7 @@ export default function App() {
 
 我们需要在组件的不同生命周期中执行不同的操作，比如添加解除监听器、发起网络请求等
 
-![React Life Cycle: https://projects.wojtekmaj.pl/react-lifecycle-methods-diagram/](./React.assets/react-life-cycle.png)
+![React Life Cycle: https://projects.wojtekmaj.pl/react-lifecycle-methods-diagram/](./React.assets/react-life-cycle.webp)
 
 结合上图，解读一下组件的完整生命周期：
 
@@ -1979,7 +1979,7 @@ export default class Player extends Component {
 
 从React的源码可以看到，setState方法是从Component集继承而来的
 
-![setState in source code of React](./React.assets/prototype-setState.png)
+![setState in source code of React](./React.assets/prototype-setState.webp)
 
 ### setState的异步更新
 

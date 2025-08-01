@@ -4,7 +4,7 @@ editLink: false
 
 # 个人介绍
 
-![logo](/logo.png)
+![logo](/logo.webp)
 
 北京交通大学（BeijingJiaoTong University）电子信息工程学院本科在读
 
