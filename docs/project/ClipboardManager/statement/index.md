@@ -6,6 +6,8 @@ aside: false
 
 # Q&A
 
+[[TOC]]
+
 ## 如何设置快捷键快速打开插件
 
 uTools 个人中心 / 全局快捷键 / 将 `Clipboard` 设置为你想要的快捷键

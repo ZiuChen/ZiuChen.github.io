@@ -1,13 +1,10 @@
 export const projects = [
   { text: '超级剪贴板', link: '/project/ClipboardManager/' },
-  { text: '超级Markdown', link: '/project/Markdown/' },
-  { text: '超级JavaScript', link: '/project/JSRunner/' }
+  { text: '超级JavaScript', link: '/project/JSRunner/' },
+  { text: '超级Markdown', link: '/project/Markdown/' }
 ]
 
-export const works = [
-  { text: '个人作品', link: '/works/opensource' },
-  { text: '社区贡献', link: '/works/contribution' }
-]
+export const works = [{ text: '个人作品', link: '/works/' }]
 
 export const notes = [
   { text: 'JavaScript基础', link: '/note/JavaScript' },
