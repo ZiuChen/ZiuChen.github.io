@@ -17,5 +17,6 @@ export const notes = [
   { text: 'Redux', link: '/note/Redux' },
   { text: 'React Router', link: '/note/React Router' },
   { text: 'MySQL', link: '/note/MySQL' },
-  { text: 'Rust', link: '/note/Rust' }
+  { text: 'Rust', link: '/note/Rust' },
+  { text: 'Mermaid图表语法', link: '/note/Mermaid' }
 ]
