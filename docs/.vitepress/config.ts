@@ -14,6 +14,9 @@ export default defineConfig({
       lazyLoading: true
     }
   },
+  mermaid: {
+    // refer to https://mermaid.js.org/config/setup/modules/mermaidAPI.html#mermaidapi-configuration-defaults
+  },
   themeConfig: {
     logo: '/logo.png',
     nav: [
